@@ -1,123 +1,201 @@
-# ⛳ Masters Pool 2026
+/**
+ * Masters Pool 2026 — Server
+ * ─────────────────────────────────────────────────────────
+ * Serves the frontend and proxies ESPN Golf scores to
+ * avoid CORS restrictions.
+ *
+ * ESPN Golf Leaderboard API (unofficial, public):
+ *   https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard
+ *   ?league=pga&event=401353232   ← Masters tournament ID
+ *
+ * The Masters 2026 ESPN event ID: 401580359
+ * (falls back to the active PGA event if ID changes)
+ *
+ * Setup:
+ *   npm install express node-fetch cors
+ *   node server.js
+ *
+ * Then open http://localhost:3000
+ * ─────────────────────────────────────────────────────────
+ */
 
-Snake draft + live ESPN scoreboard for your Masters golf pool.
+const express = require('express');
+const path    = require('path');
+const app     = express();
 
-## Features
+// ── Try to use node-fetch v2 (CommonJS). Falls back to built-in fetch
+// ── (Node 18+) if not installed.
+let fetchFn;
+try {
+  fetchFn = require('node-fetch');
+  if (fetchFn.default) fetchFn = fetchFn.default; // handle esm compat
+} catch {
+  fetchFn = fetch; // Node 18+ global
+}
 
-- **Snake Draft** — 10 managers, 5 picks each, 90-second clock
-- **Live Scores** — proxied from ESPN Golf API, auto-refreshes every 60 seconds
-- **Pool Scoreboard** — ranks managers by best-4-of-5 scores to par
-- **Randomize Draft Order** — available up to 1 hour before draft start
-- **Mobile-first** — works great on phones
-- **Password protected** — pool join requires password
+const PORT = process.env.PORT || 3000;
 
----
+// Masters 2026 ESPN event ID.
+// To find it: go to https://www.espn.com/golf/leaderboard and the URL
+// contains the event ID, e.g. ?tournamentId=401580359
+const MASTERS_ESPN_ID = '401580359';
 
-## Quick Start (Local)
+// ──────────────────────────────────────────────────────────
+// Serve static files from /public
+// ──────────────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
 
-### 1. Install Node.js
-Download from https://nodejs.org (v18 or newer)
+// ──────────────────────────────────────────────────────────
+// Simple in-memory cache (1 minute TTL)
+// ──────────────────────────────────────────────────────────
+let scoreCache = { data: null, ts: 0 };
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
 
-### 2. Install dependencies
-```bash
-cd masters-pool
-npm install
-```
+// ──────────────────────────────────────────────────────────
+// GET /api/scores  — ESPN Golf leaderboard proxy
+// ──────────────────────────────────────────────────────────
+app.get('/api/scores', async (req, res) => {
+  // Return cached data if fresh
+  if (scoreCache.data && Date.now() - scoreCache.ts < CACHE_TTL_MS) {
+    return res.json(scoreCache.data);
+  }
 
-### 3. Run the server
-```bash
-npm start
-```
+  try {
+    const data = await fetchESPNScores();
+    scoreCache = { data, ts: Date.now() };
+    res.json(data);
+  } catch (err) {
+    console.error('[scores] ESPN fetch failed:', err.message);
+    // Return stale cache if available, otherwise 503
+    if (scoreCache.data) {
+      return res.json({ ...scoreCache.data, _stale: true });
+    }
+    res.status(503).json({ error: 'Scores unavailable', detail: err.message });
+  }
+});
 
-### 4. Open the app
-```
-http://localhost:3000
-```
+async function fetchESPNScores() {
+  // ── Strategy 1: Specific Masters event ID ──────────────
+  const primaryUrl =
+    `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard` +
+    `?league=pga&event=${MASTERS_ESPN_ID}`;
 
-Share your local IP with friends on the same network (e.g. `http://192.168.1.x:3000`)
+  let resp = await fetchFn(primaryUrl, {
+    headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+    signal: AbortSignal.timeout(8000),
+  });
 
----
+  // ── Strategy 2: Active PGA event (fallback) ────────────
+  if (!resp.ok) {
+    console.warn('[scores] Primary ESPN URL failed, trying fallback…');
+    resp = await fetchFn(
+      'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga',
+      { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) }
+    );
+  }
 
-## Deployment (Free — Render.com)
+  if (!resp.ok) throw new Error(`ESPN returned HTTP ${resp.status}`);
+  const raw = await resp.json();
+  return normalizeESPN(raw);
+}
 
-1. Push this folder to a GitHub repo
-2. Go to https://render.com → New Web Service
-3. Connect your repo
-4. Set:
-   - **Build command:** `npm install`
-   - **Start command:** `node server.js`
-   - **Environment:** Node
-5. Deploy — you get a public URL like `https://masters-pool.onrender.com`
-6. Share that URL + password with your group
+/**
+ * Normalize the ESPN response into a clean structure for the frontend.
+ *
+ * ESPN leaderboard JSON shape (simplified):
+ * {
+ *   events: [{
+ *     name: "Masters Tournament",
+ *     competitions: [{
+ *       status: { type: { description, shortDetail } },
+ *       competitors: [{
+ *         athlete: { displayName, id },
+ *         score: "-8",          ← total score to par
+ *         status: { thru, type: { description } },
+ *         linescores: [{ value }]  ← per-round scores
+ *       }]
+ *     }]
+ *   }]
+ * }
+ */
+function normalizeESPN(raw) {
+  const event      = raw?.events?.[0] || {};
+  const comp       = event?.competitions?.[0] || {};
+  const status     = comp?.status || {};
+  const competitors = comp?.competitors || [];
 
-**Free tier note:** Render free tier spins down after 15 min of inactivity.
-For always-on during Masters week, use the $7/mo Starter plan.
+  const leaderboard = competitors.map(c => {
+    const athlete = c?.athlete || {};
+    const rounds  = (c?.linescores || []).map(ls => {
+      const v = ls?.value;
+      return v !== undefined ? Number(v) : null;
+    }).filter(v => v !== null);
 
----
+    return {
+      id:     athlete?.id || '',
+      name:   athlete?.displayName || '',
+      score:  c?.score || 'E',           // total to par string e.g. "-8"
+      toPar:  parseScore(c?.score),       // integer
+      thru:   c?.status?.thru || '',
+      status: c?.status?.type?.description || '',
+      pos:    c?.status?.position?.displayText || '',
+      rounds,                             // [R1, R2, R3, R4] to par per round
+    };
+  });
 
-## Deployment (Free — Vercel)
+  // Sort by score (ascending = lower is better)
+  leaderboard.sort((a, b) => a.toPar - b.toPar);
 
-```bash
-npm install -g vercel
-vercel deploy
-```
+  return {
+    tournament: event?.name || 'Masters Tournament',
+    eventId:    event?.id || MASTERS_ESPN_ID,
+    round:      status?.type?.shortDetail || '',
+    status:     status?.type?.description || 'Scheduled',
+    inProgress: status?.type?.state === 'in',
+    leaderboard,
+    fetchedAt:  new Date().toISOString(),
+  };
+}
 
-Vercel works great for static + serverless. The `/api/scores` route
-will automatically become a serverless function.
+function parseScore(s) {
+  if (!s || s === 'E' || s === 'Par') return 0;
+  const n = parseInt(s, 10);
+  return isNaN(n) ? 0 : n;
+}
 
----
+// ──────────────────────────────────────────────────────────
+// GET /api/pool  — Save/load pool state (simple JSON file)
+// ──────────────────────────────────────────────────────────
+const fs   = require('fs');
+const POOL_FILE = path.join(__dirname, 'pool-state.json');
 
-## ESPN Score API
+app.get('/api/pool', (req, res) => {
+  try {
+    if (!fs.existsSync(POOL_FILE)) return res.json(null);
+    res.json(JSON.parse(fs.readFileSync(POOL_FILE, 'utf8')));
+  } catch { res.status(500).json({ error: 'Could not read pool state' }); }
+});
 
-The server proxies:
-```
-GET /api/scores
-```
-→ fetches from ESPN:
-```
-https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard
-  ?league=pga&event=401580359
-```
+app.post('/api/pool', (req, res) => {
+  try {
+    fs.writeFileSync(POOL_FILE, JSON.stringify(req.body, null, 2));
+    res.json({ ok: true });
+  } catch { res.status(500).json({ error: 'Could not save pool state' }); }
+});
 
-**Masters 2026 ESPN Event ID:** `401580359`
+// ──────────────────────────────────────────────────────────
+// Catch-all: serve index.html for SPA routing
+// ──────────────────────────────────────────────────────────
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-If the event ID needs updating (ESPN sometimes changes these), find it by:
-1. Going to https://www.espn.com/golf/leaderboard during the Masters
-2. Looking at the URL: `?tournamentId=XXXXXXX`
-3. Update `MASTERS_ESPN_ID` in `server.js`
-
-Scores cache for 60 seconds to avoid hammering ESPN.
-
----
-
-## Pool State Persistence
-
-Pool state (managers, picks, settings) is saved to `pool-state.json`
-via `POST /api/pool`. On reload the app restores from this file.
-
-For multi-device real-time sync, replace the file-based storage with
-Firebase Realtime Database — see the commented block in server.js.
-
----
-
-## Testing the Draft
-
-From the home screen, tap **⚡ Test Draft Mode**:
-- Loads 10 demo managers instantly
-- Draft starts immediately
-- You are "You" and pick first
-- Other managers auto-pick every ~2 seconds
-- Tap **"Skip to my turn ▶"** in the blue banner to jump to your next pick
-
----
-
-## File Structure
-
-```
-masters-pool/
-├── server.js          ← Express server + ESPN proxy
-├── package.json
-├── pool-state.json    ← auto-created on first save
-└── public/
-    └── index.html     ← Full app (draft + scoreboard)
-```
+// ──────────────────────────────────────────────────────────
+// Start
+// ──────────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`\n⛳  Masters Pool 2026 running at http://localhost:${PORT}`);
+  console.log(`   ESPN scores endpoint: http://localhost:${PORT}/api/scores`);
+  console.log(`   Pool state endpoint:  http://localhost:${PORT}/api/pool\n`);
+});
