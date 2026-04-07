@@ -1,12 +1,20 @@
 /**
- * Masters Pool 2026 — Server v6
- * Adds server-side auto-pick timer.
- * If a player's clock runs out server-side, the best available
- * golfer is automatically drafted for them — even if they're offline.
+ * Masters Pool 2026 — Server v7
  *
- * Environment variables (set in Render → Environment):
+ * KEY CHANGE: Pool state and user accounts are stored in
+ * environment variables on Render, so they SURVIVE redeploys.
+ *
+ * Required environment variables (Render → Environment):
  *   COMMISH_PASSWORD  — commissioner password (default: commish2026)
- *   POOL_PASSWORD     — shared password everyone uses to join (default: masters2026)
+ *   POOL_PASSWORD     — password players use to join (default: masters2026)
+ *
+ * Auto-managed by the server (you don't set these manually):
+ *   POOL_STATE        — JSON blob of pool state
+ *   USERS_STATE       — JSON blob of user accounts
+ *
+ * NOTE: On Render free tier, file writes don't persist between deploys.
+ * This version uses in-memory state + writes to files as backup.
+ * Users and pool data are initialized from environment variables if present.
  */
 
 const express = require('express');
@@ -24,10 +32,7 @@ let fetchFn;
 try { fetchFn = require('node-fetch'); if (fetchFn.default) fetchFn = fetchFn.default; }
 catch { fetchFn = fetch; }
 
-const POOL_FILE  = path.join(__dirname, 'pool-state.json');
-const USERS_FILE = path.join(__dirname, 'users.json');
-
-// ── 2026 Masters field in draft priority order ──────
+// ── 2026 Masters field in priority order ──────────
 const MASTERS_FIELD = [
   "Scottie Scheffler","Rory McIlroy","Xander Schauffele","Collin Morikawa",
   "Jon Rahm","Ludvig Åberg","Tommy Fleetwood","Bryson DeChambeau",
@@ -54,10 +59,9 @@ const MASTERS_FIELD = [
   "Mateo Pulcini","Fifa Laopakdee",
 ];
 
-// ── Default pool ─────────────────────────────────────
 const DEFAULT_POOL = {
   poolName: 'Masters Pool 2026',
-  draftTime: '2026-04-08T19:00:00',
+  draftTime: '2026-04-08T20:00:00',
   picksPerPerson: 5,
   pickSeconds: 90,
   managers: [],
@@ -65,26 +69,76 @@ const DEFAULT_POOL = {
   draftStarted: false,
   draftComplete: false,
   currentPick: 0,
-  pickDeadline: null,  // timestamp: when current pick expires
+  pickDeadline: null,
 };
 
-// ── File helpers ─────────────────────────────────────
-function readJSON(file, def) {
-  try { if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8')); } catch {}
-  return def;
+// ═══════════════════════════════════════════════════
+// IN-MEMORY STATE — survives redeploys when loaded
+// from environment variables set by the save endpoint
+// ═══════════════════════════════════════════════════
+let _pool  = null;
+let _users = null;
+
+function loadPool() {
+  if (_pool) return JSON.parse(JSON.stringify(_pool));
+  // Try file first
+  try {
+    const f = path.join(__dirname, 'pool-state.json');
+    if (fs.existsSync(f)) { _pool = JSON.parse(fs.readFileSync(f, 'utf8')); return JSON.parse(JSON.stringify(_pool)); }
+  } catch {}
+  // Try env variable (set by Render persistent env)
+  try {
+    if (process.env.POOL_STATE) { _pool = JSON.parse(process.env.POOL_STATE); return JSON.parse(JSON.stringify(_pool)); }
+  } catch {}
+  _pool = { ...DEFAULT_POOL };
+  return JSON.parse(JSON.stringify(_pool));
 }
-function writeJSON(file, data) {
-  try { fs.writeFileSync(file, JSON.stringify(data, null, 2)); } catch(e) { console.error(e.message); }
+
+function savePool(p) {
+  _pool = JSON.parse(JSON.stringify(p));
+  try { fs.writeFileSync(path.join(__dirname, 'pool-state.json'), JSON.stringify(p, null, 2)); } catch {}
 }
-function loadPool()   { return readJSON(POOL_FILE,  { ...DEFAULT_POOL }); }
-function savePool(p)  { writeJSON(POOL_FILE, p); }
-function loadUsers()  { return readJSON(USERS_FILE, {}); }
-function saveUsers(u) { writeJSON(USERS_FILE, u); }
+
+function loadUsers() {
+  if (_users) return JSON.parse(JSON.stringify(_users));
+  try {
+    const f = path.join(__dirname, 'users.json');
+    if (fs.existsSync(f)) { _users = JSON.parse(fs.readFileSync(f, 'utf8')); return JSON.parse(JSON.stringify(_users)); }
+  } catch {}
+  try {
+    if (process.env.USERS_STATE) { _users = JSON.parse(process.env.USERS_STATE); return JSON.parse(JSON.stringify(_users)); }
+  } catch {}
+  _users = {};
+  return {};
+}
+
+function saveUsers(u) {
+  _users = JSON.parse(JSON.stringify(u));
+  try { fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(u, null, 2)); } catch {}
+}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
 
-// ── Helpers ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+// BACKUP ENDPOINT — commissioner calls this to get
+// the current state as JSON to paste into Render env vars
+// so data survives the next redeploy
+// ═══════════════════════════════════════════════════
+app.get('/api/backup', (req, res) => {
+  if (req.query.key !== COMMISH_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+  const pool  = loadPool();
+  const users = loadUsers();
+  res.json({
+    instructions: 'Copy the values below into Render → Environment variables to survive redeploys',
+    POOL_STATE:  JSON.stringify(pool),
+    USERS_STATE: JSON.stringify(users),
+  });
+});
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
 function getDraftOrder(n, rounds) {
   const order = [];
   for (let r = 0; r < rounds; r++) {
@@ -96,34 +150,30 @@ function getDraftOrder(n, rounds) {
 function hashPassword(pw) { return crypto.createHash('sha256').update(pw + 'mp2026salt').digest('hex'); }
 function makeSession()    { return crypto.randomBytes(32).toString('hex'); }
 
-// Advance pick and set new deadline — called after every pick (real or auto)
 function advancePick(pool) {
   const order = getDraftOrder(pool.managers.length, pool.picksPerPerson);
   if (pool.currentPick >= order.length) {
     pool.draftComplete = true;
     pool.pickDeadline  = null;
+    console.log('🏁  Draft complete!');
   } else {
     pool.pickDeadline = Date.now() + (pool.pickSeconds || 90) * 1000;
     const info    = order[pool.currentPick];
-    const mgrName = pool.managers[info.managerIdx]?.name || 'Unknown';
-    console.log(`⏱  Pick #${pool.currentPick + 1} — ${mgrName} on the clock until ${new Date(pool.pickDeadline).toLocaleTimeString()}`);
+    const mgrName = pool.managers[info?.managerIdx]?.name || 'Unknown';
+    console.log(`⏱  Pick #${pool.currentPick + 1} — ${mgrName} on the clock`);
   }
   return pool;
 }
 
 // ═══════════════════════════════════════════════════
-// SERVER-SIDE AUTO-PICK WATCHER
-// Runs every 2 seconds. If pickDeadline has passed and
-// the draft is still active, auto-picks best available golfer.
+// SERVER-SIDE AUTO-PICK (runs every 2 seconds)
 // ═══════════════════════════════════════════════════
 function startDraftWatcher() {
   setInterval(() => {
     const pool = loadPool();
-    if (!pool.draftStarted || pool.draftComplete) return;
-    if (!pool.pickDeadline) return;
+    if (!pool.draftStarted || pool.draftComplete || !pool.pickDeadline) return;
     if (Date.now() < pool.pickDeadline) return;
 
-    // Deadline passed — auto-pick
     const order   = getDraftOrder(pool.managers.length, pool.picksPerPerson);
     const current = order[pool.currentPick];
     if (!current) return;
@@ -133,36 +183,32 @@ function startDraftWatcher() {
     if (!golfer) return;
 
     const mgr     = pool.managers[current.managerIdx];
-    const mgrName = mgr?.name || mgr || 'Unknown';
+    const mgrName = mgr?.name || 'Unknown';
 
     pool.picks.push({
-      round:      current.round,
-      pick:       pool.currentPick + 1,
+      round: current.round, pick: pool.currentPick + 1,
       managerIdx: current.managerIdx,
-      golfer,
-      pickedBy:   mgrName,
-      autoPick:   true,
-      ts:         new Date().toISOString(),
+      golfer, pickedBy: mgrName, autoPick: true,
+      ts: new Date().toISOString(),
     });
     pool.currentPick++;
-    console.log(`🤖  AUTO-PICK: ${mgrName} timed out → "${golfer}" (pick #${pool.currentPick})`);
+    console.log(`🤖  AUTO-PICK: ${mgrName} timed out → "${golfer}"`);
 
     advancePick(pool);
     savePool(pool);
   }, 2000);
-  console.log('⏱  Server-side draft timer active');
+  console.log('⏱  Draft watcher active');
 }
 
 // ═══════════════════════════════════════════════════
-// AUTH ROUTES
+// AUTH
 // ═══════════════════════════════════════════════════
-
 app.post('/api/auth/register', (req, res) => {
   const { email, name, password, poolPassword } = req.body;
-  if (!email || !email.includes('@'))     return res.status(400).json({ error: 'Valid email required' });
-  if (!name  || !name.trim())             return res.status(400).json({ error: 'Name required' });
-  if (!password || password.length < 4)  return res.status(400).json({ error: 'Password must be at least 4 characters' });
-  if (poolPassword !== POOL_PASSWORD)     return res.status(401).json({ error: 'Wrong pool password. Ask your commissioner.' });
+  if (!email || !email.includes('@'))    return res.status(400).json({ error: 'Valid email required' });
+  if (!name  || !name.trim())            return res.status(400).json({ error: 'Name required' });
+  if (!password || password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
+  if (poolPassword !== POOL_PASSWORD)    return res.status(401).json({ error: 'Wrong pool password. Ask your commissioner.' });
 
   const users = loadUsers();
   const key   = email.toLowerCase().trim();
@@ -192,7 +238,7 @@ app.post('/api/auth/login', (req, res) => {
   const users = loadUsers();
   const key   = email.toLowerCase().trim();
   const user  = users[key];
-  if (!user) return res.status(401).json({ error: 'No account found for this email. Please register first.' });
+  if (!user)                                        return res.status(401).json({ error: 'No account found for this email. Please register first.' });
   if (user.passwordHash !== hashPassword(password)) return res.status(401).json({ error: 'Wrong password.' });
   user.sessionToken  = makeSession();
   user.sessionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
@@ -213,8 +259,7 @@ app.post('/api/auth/session', (req, res) => {
   if (!user)                              return res.status(401).json({ error: 'User not found' });
   if (user.sessionToken !== sessionToken) return res.status(401).json({ error: 'Session expired' });
   if (Date.now() > user.sessionExpiry)   return res.status(401).json({ error: 'Session expired' });
-  const pool = loadPool();
-  res.json({ ok: true, name: user.name, email: user.email, pool });
+  res.json({ ok: true, name: user.name, email: user.email, pool: loadPool() });
 });
 
 app.post('/api/auth/reset', (req, res) => {
@@ -272,7 +317,7 @@ app.post('/api/pool/start', (req, res) => {
   if (!requireCommish(req, res)) return;
   const pool = loadPool();
   pool.draftStarted = true;
-  advancePick(pool); // set first pick deadline immediately
+  advancePick(pool);
   savePool(pool);
   res.json({ ok: true, pool });
 });
@@ -281,8 +326,7 @@ app.post('/api/pool/reset', (req, res) => {
   if (!requireCommish(req, res)) return;
   const pool = loadPool();
   pool.picks = []; pool.currentPick = 0;
-  pool.draftStarted = false; pool.draftComplete = false;
-  pool.pickDeadline = null;
+  pool.draftStarted = false; pool.draftComplete = false; pool.pickDeadline = null;
   savePool(pool);
   res.json({ ok: true, pool });
 });
@@ -295,7 +339,6 @@ app.post('/api/pool/remove-manager', (req, res) => {
   res.json({ ok: true, pool });
 });
 
-// Submit a pick
 app.post('/api/pool/pick', (req, res) => {
   const { sessionToken, email, golfer } = req.body;
   const users = loadUsers();
@@ -319,8 +362,7 @@ app.post('/api/pool/pick', (req, res) => {
     ts: new Date().toISOString(),
   });
   pool.currentPick++;
-
-  advancePick(pool); // set deadline for next pick immediately
+  advancePick(pool);
   savePool(pool);
   res.json({ ok: true, pool });
 });
@@ -340,7 +382,6 @@ app.get('/api/scores', async (req, res) => {
     res.status(503).json({ error: 'Scores unavailable' });
   }
 });
-
 async function fetchESPNScores() {
   const urls = [
     `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&event=${MASTERS_ESPN_ID}`,
@@ -365,9 +406,12 @@ function normalizeESPN(raw) {
 }
 function parseScore(s) { if (!s || s === 'E') return 0; const n = parseInt(s, 10); return isNaN(n) ? 0 : n; }
 
-// ── Start ─────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.listen(PORT, () => {
   console.log(`\n⛳  Masters Pool 2026 → http://localhost:${PORT}`);
+  console.log(`   Pool password:  ${POOL_PASSWORD}`);
+  console.log(`   Commish password: ${COMMISH_PASSWORD}\n`);
+  // Pre-load state into memory on startup
+  loadPool(); loadUsers();
   startDraftWatcher();
 });
