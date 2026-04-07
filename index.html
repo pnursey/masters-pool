@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Georgia',serif;background:#152a15;color:#f0ead6;min-height:100vh;}
-:root{--gold:#c9a84c;--gold-light:#e8d08a;--gdk:#0d200d;--cream:#f0ead6;--dim:#b8af94;--red:#c44;--card:#ffffff0f;--border:rgba(201,168,76,0.28);}
+:root{--gold:#c9a84c;--gold-light:#e8d08a;--cream:#f0ead6;--dim:#b8af94;--red:#c44;--card:#ffffff0f;--border:rgba(201,168,76,0.28);}
 .screen{display:none;min-height:100vh;}.screen.active{display:block;}
 
 .hdr{background:#0d200d;border-bottom:2px solid var(--gold);padding:12px 16px 9px;text-align:center;position:sticky;top:0;z-index:200;}
@@ -18,11 +18,11 @@ body{font-family:'Georgia',serif;background:#152a15;color:#f0ead6;min-height:100
 .tab{flex:1;padding:10px 2px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;font-family:Georgia,serif;}
 .tab.on{color:var(--gold);border-bottom-color:var(--gold);}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px;margin:11px;}
-.ctitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:11px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:11px;}
+.ctitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
 
 .lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px;display:block;}
-.inp{width:100%;padding:10px 12px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;color:var(--cream);font-size:14px;font-family:Georgia,serif;outline:none;}
+.inp{width:100%;padding:10px 12px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;color:var(--cream);font-size:15px;font-family:Georgia,serif;outline:none;}
 .inp:focus{border-color:var(--gold);}
 .fg{margin-bottom:13px;}
 select.inp{-webkit-appearance:none;}
@@ -39,15 +39,17 @@ select.inp{-webkit-appearance:none;}
 .badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;margin-left:5px;vertical-align:middle;}
 .b-gold{background:rgba(201,168,76,.18);color:var(--gold);}
 .b-green{background:rgba(80,180,80,.2);color:#90df90;}
-.b-red{background:rgba(200,60,60,.2);color:#f08080;}
 
-/* SETUP */
-.logo-area{text-align:center;padding:32px 16px 16px;}
+.logo-area{text-align:center;padding:32px 16px 10px;}
 .logo-icon{font-size:56px;}
 .logo-name{font-size:26px;color:var(--gold);letter-spacing:2px;margin-top:8px;}
 .logo-sub{color:var(--dim);font-size:13px;margin-top:5px;font-style:italic;}
 
-/* LOBBY */
+/* toggle between login / register */
+.auth-toggle{display:flex;background:rgba(0,0,0,.25);border-radius:8px;padding:3px;margin-bottom:16px;}
+.auth-toggle button{flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-family:Georgia,serif;cursor:pointer;background:transparent;color:var(--dim);transition:all .2s;}
+.auth-toggle button.on{background:var(--gold);color:#152a15;font-weight:bold;}
+
 .mgr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:4px 0 10px;}
 .mgr-slot{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;min-height:46px;display:flex;align-items:center;}
 .mgr-slot.on{border-color:var(--gold);}
@@ -58,7 +60,6 @@ select.inp{-webkit-appearance:none;}
 .cdown-time{font-size:34px;color:var(--gold);letter-spacing:2px;}
 .cdown-lbl{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
 
-/* DRAFT */
 .clock-bar{background:#0a1a0a;border-bottom:1px solid var(--border);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:115px;z-index:150;}
 .on-clock{font-size:12px;color:var(--dim);}
 .on-clock b{color:var(--gold);font-size:15px;}
@@ -114,7 +115,6 @@ select.inp{-webkit-appearance:none;}
 .c-info{flex:1;}
 .c-nm{font-size:13px;color:var(--cream);}
 .c-em{font-size:11px;color:var(--dim);}
-.c-ord{font-size:10px;color:var(--dim);}
 .c-up{background:none;border:none;color:var(--dim);font-size:14px;cursor:pointer;padding:3px 4px;}
 .c-rm{background:none;border:none;color:var(--red);font-size:17px;cursor:pointer;padding:3px 6px;}
 
@@ -143,16 +143,12 @@ select.inp{-webkit-appearance:none;}
 .lb-link{display:block;text-align:center;font-size:11px;color:var(--dim);padding:6px;}
 .lb-link a{color:var(--gold);text-decoration:none;}
 
-/* CHECK EMAIL screen */
-.check-email-box{text-align:center;padding:40px 20px;}
-.check-email-icon{font-size:56px;margin-bottom:16px;}
-.check-email-title{font-size:22px;color:var(--gold);margin-bottom:8px;}
-.check-email-sub{color:var(--dim);font-size:14px;line-height:1.7;margin-bottom:24px;}
+.hint{font-size:11px;color:var(--dim);margin-top:5px;line-height:1.5;}
 </style>
 </head>
 <body>
 
-<!-- ===== LOGIN SCREEN ===== -->
+<!-- ===== LOGIN ===== -->
 <div id="s-login" class="screen active">
   <div class="logo-area">
     <div class="logo-icon">⛳</div>
@@ -160,64 +156,63 @@ select.inp{-webkit-appearance:none;}
     <div class="logo-sub">2026 Augusta National · Snake Draft</div>
   </div>
 
-  <!-- Step 1: Enter email -->
-  <div class="card" id="step-email">
-    <div class="ctitle">Sign In with Email</div>
-    <div class="fg">
-      <label class="lbl">Your Email Address</label>
-      <input class="inp" id="login-email" type="email" placeholder="you@email.com" autocomplete="email"
-        onkeydown="if(event.key==='Enter')requestLink()">
+  <!-- Player login/register card -->
+  <div class="card" id="player-card">
+    <div class="auth-toggle">
+      <button class="on" id="toggle-login"    onclick="showLogin()">Sign In</button>
+      <button          id="toggle-register"   onclick="showRegister()">Create Account</button>
     </div>
-    <div class="msg err" id="email-err"></div>
-    <button class="btn btn-gold" id="send-btn" onclick="requestLink()">Send Me a Login Link</button>
+
+    <!-- SIGN IN -->
+    <div id="form-login">
+      <div class="fg"><label class="lbl">Email</label>
+        <input class="inp" id="li-email" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('li-pass').focus()">
+      </div>
+      <div class="fg"><label class="lbl">Your Password</label>
+        <input class="inp" id="li-pass" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="msg err" id="li-err"></div>
+      <button class="btn btn-gold" onclick="doLogin()">Sign In</button>
+    </div>
+
+    <!-- CREATE ACCOUNT -->
+    <div id="form-register" style="display:none;">
+      <div class="fg"><label class="lbl">Your Name</label>
+        <input class="inp" id="reg-name" type="text" placeholder="e.g. John Smith" autocomplete="name">
+      </div>
+      <div class="fg"><label class="lbl">Email</label>
+        <input class="inp" id="reg-email" type="email" placeholder="you@email.com" autocomplete="email">
+      </div>
+      <div class="fg"><label class="lbl">Pool Password</label>
+        <input class="inp" id="reg-pool-pass" type="password" placeholder="Ask your commissioner for this">
+        <div class="hint">This is the shared password your commissioner gave you.</div>
+      </div>
+      <div class="fg"><label class="lbl">Choose Your Personal Password</label>
+        <input class="inp" id="reg-pass" type="password" placeholder="Pick something you'll remember" autocomplete="new-password">
+        <div class="hint">You'll use this every time you sign in. Min 4 characters.</div>
+      </div>
+      <div class="msg err" id="reg-err"></div>
+      <button class="btn btn-gold" onclick="doRegister()">Create Account & Join Pool</button>
+    </div>
+
     <div class="divider"></div>
     <div class="tc">
       <span class="muted" style="font-size:12px;">Commissioner? </span>
-      <button class="btn btn-outline btn-sm mt8" onclick="showCommishLogin()">Commissioner Login →</button>
+      <button class="btn-outline btn-sm" onclick="showCommishLogin()" style="display:inline-block;padding:7px 14px;font-size:12px;border-radius:8px;border:1px solid var(--gold);color:var(--gold);background:transparent;cursor:pointer;">Commissioner Login →</button>
     </div>
   </div>
 
-  <!-- Step 2: Check email confirmation -->
-  <div class="check-email-box" id="step-check" style="display:none;">
-    <div class="check-email-icon">📬</div>
-    <div class="check-email-title">Check your email</div>
-    <div class="check-email-sub">
-      We sent a login link to<br>
-      <strong id="sent-to" style="color:var(--cream);"></strong><br><br>
-      Click the link in the email to join the pool.<br>
-      It expires in 15 minutes.
-    </div>
-    <button class="btn btn-outline" onclick="backToEmail()">← Use a different email</button>
-    <div class="mt12 muted tc" style="font-size:12px;">Didn't get it? Check your spam folder.</div>
-  </div>
-
-  <!-- Step 3: New user — set display name -->
-  <div class="card" id="step-name" style="display:none;">
-    <div class="ctitle">Welcome! Set Your Name</div>
-    <div class="muted mb8">This is how you'll appear in the pool.</div>
-    <div class="fg">
-      <label class="lbl">Display Name</label>
-      <input class="inp" id="display-name" placeholder="e.g. John Smith" autocomplete="name"
-        onkeydown="if(event.key==='Enter')submitName()">
-    </div>
-    <div class="msg err" id="name-err"></div>
-    <button class="btn btn-gold" onclick="submitName()">Join the Pool</button>
-  </div>
-
-  <!-- Commissioner login -->
-  <div class="card" id="step-commish" style="display:none;">
+  <!-- Commissioner login card -->
+  <div class="card" id="commish-card" style="display:none;">
     <div class="ctitle">Commissioner Login</div>
-    <div class="fg">
-      <label class="lbl">Commissioner Password</label>
-      <input class="inp" id="commish-pass" type="password" placeholder="Your commissioner password"
-        onkeydown="if(event.key==='Enter')commishLogin()">
+    <div class="fg"><label class="lbl">Commissioner Password</label>
+      <input class="inp" id="c-pass" type="password" placeholder="Commissioner password" onkeydown="if(event.key==='Enter')doCommishLogin()">
     </div>
-    <div class="msg err" id="commish-err"></div>
-    <button class="btn btn-gold" onclick="commishLogin()">Login as Commissioner</button>
+    <div class="msg err" id="c-err"></div>
+    <button class="btn btn-gold mb8" onclick="doCommishLogin()">Login as Commissioner</button>
+    <button class="btn btn-outline" onclick="showPlayerCard()">← Back</button>
     <div class="divider"></div>
-    <div class="tc muted" style="font-size:11px;">Default password: <b style="color:var(--gold);">commish2026</b><br>Change it in Render → Environment Variables</div>
-    <div class="divider"></div>
-    <button class="btn btn-outline" onclick="showEmailLogin()">← Back</button>
+    <div class="muted tc" style="font-size:11px;">Default: <b style="color:var(--gold);">commish2026</b> — change in Render → Environment → COMMISH_PASSWORD</div>
   </div>
 </div>
 
@@ -305,14 +300,13 @@ select.inp{-webkit-appearance:none;}
     </div>
   </div>
 
-  <!-- TEAMS / PICK HISTORY -->
+  <!-- TEAMS -->
   <div id="tc-teams" style="display:none;padding-bottom:80px;">
     <div id="teams-content"></div>
   </div>
 
   <!-- ADMIN -->
   <div id="tc-admin" style="display:none;padding-bottom:80px;">
-
     <div class="commish-section mt12">
       <div class="commish-title">⚙ Pool Settings</div>
       <div class="fg"><label class="lbl">Pool Name</label><input class="inp" id="a-pool-name"></div>
@@ -326,7 +320,7 @@ select.inp{-webkit-appearance:none;}
         <select class="inp" id="a-pick-secs">
           <option value="30">30 seconds</option>
           <option value="60">60 seconds</option>
-          <option value="90" selected>90 seconds (default)</option>
+          <option value="90" selected>90 seconds</option>
           <option value="120">2 minutes</option>
           <option value="180">3 minutes</option>
           <option value="300">5 minutes</option>
@@ -335,19 +329,27 @@ select.inp{-webkit-appearance:none;}
       <div class="msg err" id="a-settings-err"></div>
       <div class="msg ok"  id="a-settings-ok">Settings saved!</div>
       <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
-      <div class="muted mt8" style="font-size:11px;">To change passwords, update Environment Variables in Render.</div>
     </div>
 
     <div class="commish-section">
       <div class="commish-title">👥 Manage Draft Order</div>
       <div id="a-mgr-list"></div>
       <div class="msg err" id="a-mgr-err"></div>
-      <div class="msg ok"  id="a-mgr-ok">Saved!</div>
+      <div class="msg ok"  id="a-mgr-ok">Order saved!</div>
       <div class="flex gap8 mt8">
         <button class="btn btn-outline btn-sm f1" onclick="randomizeMgrs()">🔀 Randomize</button>
-        <button class="btn btn-gold btn-sm f1" onclick="saveMgrs()">💾 Save Order</button>
+        <button class="btn btn-gold    btn-sm f1" onclick="saveMgrs()">💾 Save Order</button>
       </div>
-      <p class="muted mt8" style="font-size:11px;">Players are added automatically when they sign in via email. Use ▲▼ to reorder, × to remove.</p>
+      <p class="muted mt8" style="font-size:11px;">Players appear here once they create an account. Use ▲▼ to reorder, × to remove.</p>
+    </div>
+
+    <div class="commish-section">
+      <div class="commish-title">🔑 Reset a Player's Password</div>
+      <div class="fg"><label class="lbl">Player Email</label><input class="inp" id="a-reset-email" placeholder="player@email.com"></div>
+      <div class="fg"><label class="lbl">New Password</label><input class="inp" id="a-reset-pass" placeholder="New password for them"></div>
+      <div class="msg err" id="a-reset-err"></div>
+      <div class="msg ok"  id="a-reset-ok"></div>
+      <button class="btn btn-outline" onclick="resetPlayerPassword()">Reset Password</button>
     </div>
 
     <div class="commish-section">
@@ -360,7 +362,7 @@ select.inp{-webkit-appearance:none;}
     </div>
 
     <div style="padding:0 11px 20px;">
-      <button class="btn btn-outline" onclick="logout()" style="opacity:.6;font-size:13px;">Log Out</button>
+      <button class="btn btn-outline" onclick="logout()" style="opacity:.6;">Log Out</button>
     </div>
   </div>
 </div>
@@ -377,7 +379,7 @@ select.inp{-webkit-appearance:none;}
 
 <script>
 // ═══════════════════════════════════════════════════
-// 2026 MASTERS FIELD — 91 players
+// 2026 MASTERS FIELD
 // ═══════════════════════════════════════════════════
 const FIELD = [
   {name:"Scottie Scheffler",cc:"USA",rank:1,odds:"+350"},
@@ -475,159 +477,114 @@ const FIELD = [
 // ═══════════════════════════════════════════════════
 // SESSION
 // ═══════════════════════════════════════════════════
-let session = { email:'', name:'', sessionToken:'', isCommish:false, commishPassword:'' };
-let pool = {};
-let timerInt = null, timerVal = 90, pendingGolfer = null;
-let liveScores = {}, pollInt = null, lastScoreFetch = 0;
-let editMgrs = null;
+let S = { email:'', name:'', sessionToken:'', isCommish:false, commishPassword:'' };
+let pool = {}, timerInt=null, timerVal=90, pendingGolfer=null;
+let liveScores={}, pollInt=null, lastScoreFetch=0, editMgrs=null;
 
-function saveSession() { localStorage.setItem('mp_sess', JSON.stringify(session)); }
-function loadSession() { try { const s = localStorage.getItem('mp_sess'); if(s) session = JSON.parse(s); } catch{} }
+function saveS(){ localStorage.setItem('mp_s5', JSON.stringify(S)); }
+function loadS(){ try{ const s=localStorage.getItem('mp_s5'); if(s) S=JSON.parse(s); }catch{} }
+function logout(){ clearInterval(pollInt); clearInterval(timerInt); localStorage.removeItem('mp_s5'); S={email:'',name:'',sessionToken:'',isCommish:false,commishPassword:''}; goScreen('s-login'); showLogin(); }
 
-function logout() {
-  clearInterval(pollInt); clearInterval(timerInt);
-  localStorage.removeItem('mp_sess');
-  session = { email:'', name:'', sessionToken:'', isCommish:false, commishPassword:'' };
-  goScreen('s-login');
-  showEmailLogin();
-}
-
-// ═══════════════════════════════════════════════════
-// BOOT — check URL params for magic link redirect
-// ═══════════════════════════════════════════════════
-window.addEventListener('load', async () => {
-  const params = new URLSearchParams(window.location.search);
-  const urlSession = params.get('session');
-  const urlEmail   = params.get('email');
-  const isNew      = params.get('new') === '1';
-
-  // Clean URL
-  if (urlSession) window.history.replaceState({}, '', '/');
-
-  if (urlSession && urlEmail) {
-    // Came from magic link — set session and enter
-    session.sessionToken = urlSession;
-    session.email = urlEmail;
-    saveSession();
-    if (isNew) {
-      // New user needs to set their name
-      showStep('step-name');
-      return;
-    } else {
-      // Existing user — validate and enter
-      try {
-        const r = await fetch('/api/auth/session', { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ sessionToken: urlSession, email: urlEmail }) });
-        const d = await r.json();
-        if (r.ok) { session.name = d.name; pool = d.pool; saveSession(); enterApp(); return; }
-      } catch {}
+// ── Boot ──
+window.addEventListener('load', async ()=>{
+  loadS();
+  if(S.sessionToken && S.email){
+    if(S.isCommish){ try{ const r=await fetch('/api/pool'); pool=await r.json(); enterApp(); return; }catch{} }
+    else {
+      try{
+        const r=await fetch('/api/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:S.sessionToken,email:S.email})});
+        const d=await r.json();
+        if(r.ok){ S.name=d.name; pool=d.pool; saveS(); enterApp(); return; }
+      }catch{}
     }
   }
-
-  // Try restoring existing session from localStorage
-  loadSession();
-  if (session.sessionToken && session.email) {
-    if (session.isCommish) { enterApp(); return; }
-    try {
-      const r = await fetch('/api/auth/session', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ sessionToken: session.sessionToken, email: session.email }) });
-      const d = await r.json();
-      if (r.ok) { session.name = d.name; pool = d.pool; saveSession(); enterApp(); return; }
-    } catch {}
-  }
-
   // Not logged in
-  showEmailLogin();
 });
 
 // ═══════════════════════════════════════════════════
-// LOGIN FLOW
+// LOGIN UI
 // ═══════════════════════════════════════════════════
-function showStep(id) {
-  ['step-email','step-check','step-name','step-commish'].forEach(s => {
-    const el = document.getElementById(s); if(el) el.style.display = 'none';
-  });
-  const el = document.getElementById(id); if(el) el.style.display = 'block';
+function showLogin(){
+  document.getElementById('toggle-login').classList.add('on');
+  document.getElementById('toggle-register').classList.remove('on');
+  document.getElementById('form-login').style.display='block';
+  document.getElementById('form-register').style.display='none';
 }
-function showEmailLogin()  { showStep('step-email'); }
-function showCommishLogin(){ showStep('step-commish'); }
-function backToEmail()     { showStep('step-email'); }
+function showRegister(){
+  document.getElementById('toggle-register').classList.add('on');
+  document.getElementById('toggle-login').classList.remove('on');
+  document.getElementById('form-register').style.display='block';
+  document.getElementById('form-login').style.display='none';
+}
+function showCommishLogin(){ document.getElementById('player-card').style.display='none'; document.getElementById('commish-card').style.display='block'; }
+function showPlayerCard(){ document.getElementById('commish-card').style.display='none'; document.getElementById('player-card').style.display='block'; }
 
-async function requestLink() {
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const err   = document.getElementById('email-err');
-  const btn   = document.getElementById('send-btn');
+async function doLogin(){
+  const email=document.getElementById('li-email').value.trim().toLowerCase();
+  const pass =document.getElementById('li-pass').value;
+  const err  =document.getElementById('li-err');
   err.classList.remove('show');
-  if (!email || !email.includes('@')) { err.textContent='Enter a valid email.'; err.classList.add('show'); return; }
-
-  btn.disabled = true; btn.textContent = 'Sending…';
-  try {
-    const r = await fetch('/api/auth/request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
-    const d = await r.json();
-    if (!r.ok) { err.textContent = d.error || 'Something went wrong.'; err.classList.add('show'); btn.disabled=false; btn.textContent='Send Me a Login Link'; return; }
-
-    // Dev mode — link returned directly
-    if (d.dev && d.link) {
-      window.location.href = d.link; return;
-    }
-
-    document.getElementById('sent-to').textContent = email;
-    showStep('step-check');
-  } catch {
-    err.textContent = 'Connection error. Try again.'; err.classList.add('show');
-  }
-  btn.disabled = false; btn.textContent = 'Send Me a Login Link';
+  if(!email||!pass){ err.textContent='Enter your email and password.'; err.classList.add('show'); return; }
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(!r.ok){ err.textContent=d.error||'Sign in failed.'; err.classList.add('show'); return; }
+    S={email:d.email,name:d.name,sessionToken:d.sessionToken,isCommish:false,commishPassword:''};
+    pool=d.pool; saveS(); enterApp();
+  }catch{ err.textContent='Connection error. Try again.'; err.classList.add('show'); }
 }
 
-async function submitName() {
-  const name = document.getElementById('display-name').value.trim();
-  const err  = document.getElementById('name-err');
+async function doRegister(){
+  const name     =document.getElementById('reg-name').value.trim();
+  const email    =document.getElementById('reg-email').value.trim().toLowerCase();
+  const poolPass =document.getElementById('reg-pool-pass').value.trim();
+  const pass     =document.getElementById('reg-pass').value;
+  const err      =document.getElementById('reg-err');
   err.classList.remove('show');
-  if (!name) { err.textContent='Enter your name.'; err.classList.add('show'); return; }
-  try {
-    const r = await fetch('/api/auth/setname', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ sessionToken: session.sessionToken, email: session.email, name }) });
-    const d = await r.json();
-    if (!r.ok) { err.textContent = d.error || 'Error.'; err.classList.add('show'); return; }
-    session.name = d.name; pool = d.pool; saveSession(); enterApp();
-  } catch { err.textContent='Connection error.'; err.classList.add('show'); }
+  if(!name){ err.textContent='Enter your name.'; err.classList.add('show'); return; }
+  if(!email||!email.includes('@')){ err.textContent='Enter a valid email.'; err.classList.add('show'); return; }
+  if(!poolPass){ err.textContent='Enter the pool password your commissioner gave you.'; err.classList.add('show'); return; }
+  if(!pass||pass.length<4){ err.textContent='Choose a personal password (at least 4 characters).'; err.classList.add('show'); return; }
+  try{
+    const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,poolPassword:poolPass,password:pass})});
+    const d=await r.json();
+    if(!r.ok){ err.textContent=d.error||'Registration failed.'; err.classList.add('show'); return; }
+    S={email:d.email,name:d.name,sessionToken:d.sessionToken,isCommish:false,commishPassword:''};
+    pool=d.pool; saveS(); enterApp();
+  }catch{ err.textContent='Connection error. Try again.'; err.classList.add('show'); }
 }
 
-async function commishLogin() {
-  const pass = document.getElementById('commish-pass').value.trim();
-  const err  = document.getElementById('commish-err');
+async function doCommishLogin(){
+  const pass=document.getElementById('c-pass').value.trim();
+  const err =document.getElementById('c-err');
   err.classList.remove('show');
-  try {
-    const r = await fetch('/api/pool/commish', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pass }) });
-    const d = await r.json();
-    if (!r.ok) { err.textContent = d.error || 'Wrong password.'; err.classList.add('show'); return; }
-    pool = d.pool;
-    session = { email:'commish', name:'Commissioner', sessionToken:'commish', isCommish:true, commishPassword: pass };
-    saveSession(); enterApp();
-  } catch { err.textContent='Connection error.'; err.classList.add('show'); }
+  try{
+    const r=await fetch('/api/pool/commish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+    const d=await r.json();
+    if(!r.ok){ err.textContent=d.error||'Wrong password.'; err.classList.add('show'); return; }
+    pool=d.pool; S={email:'commish',name:'Commissioner',sessionToken:'commish',isCommish:true,commishPassword:pass};
+    saveS(); enterApp();
+  }catch{ err.textContent='Connection error.'; err.classList.add('show'); }
 }
 
 // ═══════════════════════════════════════════════════
 // ENTER APP
 // ═══════════════════════════════════════════════════
-function enterApp() {
-  document.getElementById('main-pool-name').textContent = pool.poolName || 'Masters Pool 2026';
-  document.getElementById('rules-picks').textContent    = pool.picksPerPerson || 5;
-  document.getElementById('rules-secs').textContent     = pool.pickSeconds || 90;
-  document.getElementById('tb-admin').style.display     = session.isCommish ? 'flex' : 'none';
+function enterApp(){
+  document.getElementById('main-pool-name').textContent=pool.poolName||'Masters Pool 2026';
+  document.getElementById('rules-picks').textContent=pool.picksPerPerson||5;
+  document.getElementById('rules-secs').textContent=pool.pickSeconds||90;
+  document.getElementById('tb-admin').style.display=S.isCommish?'flex':'none';
   goScreen('s-main'); showTab('lobby'); startCountdown(); startPolling();
-  if (pool.draftStarted && !pool.draftComplete) { renderDraftUI(); startPickTimer(); }
+  if(pool.draftStarted&&!pool.draftComplete){ renderDraftUI(); startPickTimer(); }
 }
 
 // ═══════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════
-function goScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function showTab(t) {
-  ['lobby','draft','scores','teams','admin'].forEach(x => {
-    const b=document.getElementById('tb-'+x); if(b) b.classList.remove('on');
-    const el=document.getElementById('tc-'+x); if(el) el.style.display='none';
-  });
+function goScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showTab(t){
+  ['lobby','draft','scores','teams','admin'].forEach(x=>{ const b=document.getElementById('tb-'+x); if(b) b.classList.remove('on'); const el=document.getElementById('tc-'+x); if(el) el.style.display='none'; });
   const b=document.getElementById('tb-'+t); if(b) b.classList.add('on');
   const el=document.getElementById('tc-'+t); if(el) el.style.display='block';
   if(t==='scores') fetchScores();
@@ -638,44 +595,40 @@ function showTab(t) {
 }
 
 // ═══════════════════════════════════════════════════
-// POLLING — refresh pool every 10s
+// POLLING
 // ═══════════════════════════════════════════════════
-function startPolling() {
+function startPolling(){
   clearInterval(pollInt);
-  pollInt = setInterval(async () => {
-    try {
-      const r = await fetch('/api/pool'); if(!r.ok) return;
-      pool = await r.json();
-      const active = ['lobby','draft','scores','teams'].find(t => { const el=document.getElementById('tc-'+t); return el&&el.style.display!=='none'; });
+  pollInt=setInterval(async()=>{
+    try{ const r=await fetch('/api/pool'); if(!r.ok) return; pool=await r.json();
+      const active=['lobby','draft','scores','teams'].find(t=>{ const el=document.getElementById('tc-'+t); return el&&el.style.display!=='none'; });
       if(active==='lobby') renderLobby();
       if(active==='draft') renderDraftUI();
-    } catch {}
-  }, 10000);
+    }catch{}
+  },10000);
 }
 
 // ═══════════════════════════════════════════════════
 // LOBBY
 // ═══════════════════════════════════════════════════
-function renderLobby() {
+function renderLobby(){
   const grid=document.getElementById('lobby-grid'); if(!grid) return;
   const mgrs=pool.managers||[];
   document.getElementById('mgr-count').textContent=mgrs.length+' manager'+(mgrs.length!==1?'s':'');
-  grid.innerHTML=mgrs.map((m,i)=>
-    `<div class="mgr-slot on">
-      <div><div class="slot-name">${m.name||m}${(m.email||m)===session.email||m===session.name?'<span class="badge b-green">You</span>':''}</div>
-      <div class="slot-order">#${i+1} pick order</div></div>
-    </div>`
-  ).join('') || '<div class="muted" style="padding:8px;font-size:12px;">No managers yet.</div>';
+  grid.innerHTML=mgrs.map((m,i)=>{
+    const name=m.name||m, email=m.email||m;
+    const isMe=email===S.email||name===S.name;
+    return `<div class="mgr-slot on"><div><div class="slot-name">${name}${isMe?'<span class="badge b-green">You</span>':''}</div><div class="slot-order">#${i+1} pick order</div></div></div>`;
+  }).join('')||'<div class="muted" style="padding:8px;font-size:12px;">No managers yet.</div>';
 }
 
 // ═══════════════════════════════════════════════════
 // COUNTDOWN
 // ═══════════════════════════════════════════════════
-function startCountdown() {
+function startCountdown(){
   setInterval(()=>{
-    const dt=new Date(pool.draftTime||'2026-04-08T19:00:00'), diff=dt-new Date();
-    const ls=document.getElementById('draft-time-str');
-    if(ls) ls.textContent='Draft: '+dt.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+    const dt=new Date(pool.draftTime||'2026-04-08T19:00:00'),diff=dt-new Date();
+    const ls=document.getElementById('draft-time-str'); if(ls) ls.textContent='Draft: '+dt.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
     const el=document.getElementById('cdown'),lb=document.getElementById('cdown-lbl'); if(!el) return;
     if(diff<=0){el.textContent='LIVE';if(lb)lb.textContent='Draft is Live!';return;}
     const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
@@ -687,22 +640,18 @@ function pad(n){return String(n).padStart(2,'0');}
 // ═══════════════════════════════════════════════════
 // DRAFT
 // ═══════════════════════════════════════════════════
-function getMgrName(m){ return m?.name || m; }
-function getMgrEmail(m){ return m?.email || m; }
-
+function gName(m){return m?.name||m;}
+function gEmail(m){return m?.email||m;}
 function getDraftOrder(){
   const n=pool.managers.length,r=pool.picksPerPerson||5,order=[];
-  for(let rr=0;rr<r;rr++){
-    const seq=rr%2===0?[...Array(n).keys()]:[...Array(n).keys()].reverse();
-    seq.forEach(i=>order.push({round:rr+1,managerIdx:i}));
-  }
+  for(let rr=0;rr<r;rr++){const seq=rr%2===0?[...Array(n).keys()]:[...Array(n).keys()].reverse();seq.forEach(i=>order.push({round:rr+1,managerIdx:i}));}
   return order;
 }
 function isMyTurn(){
   if(!pool.draftStarted||pool.draftComplete) return false;
   const order=getDraftOrder(),info=order[pool.currentPick]; if(!info) return false;
   const mgr=pool.managers[info.managerIdx];
-  return getMgrEmail(mgr)===session.email||getMgrName(mgr)===session.name;
+  return gEmail(mgr)===S.email||gName(mgr)===S.name;
 }
 function renderDraftUI(){
   const pre=document.getElementById('d-pre'),live=document.getElementById('d-live'),done=document.getElementById('d-done'); if(!pre) return;
@@ -710,8 +659,8 @@ function renderDraftUI(){
   if(!pool.draftStarted){pre.style.display='block';live.style.display='none';done.style.display='none';return;}
   pre.style.display='none';live.style.display='block';done.style.display='none';
   const order=getDraftOrder(),info=order[pool.currentPick]; if(!info) return;
-  const mgrObj=pool.managers[info.managerIdx],mgrName=getMgrName(mgrObj);
-  const yt=document.getElementById('your-turn'); if(yt) yt.style.display=isMyTurn()?'block':'none';
+  const mgrName=gName(pool.managers[info.managerIdx]);
+  document.getElementById('your-turn').style.display=isMyTurn()?'block':'none';
   document.getElementById('clock-mgr').textContent=mgrName;
   document.getElementById('pick-line').textContent=`Round ${info.round} · Pick ${pool.currentPick+1} of ${order.length}`;
   renderGolferList();
@@ -720,52 +669,33 @@ function startPickTimer(){
   clearInterval(timerInt); timerVal=pool.pickSeconds||90; updateTimerUI();
   timerInt=setInterval(()=>{ timerVal--; updateTimerUI(); if(timerVal<=0){clearInterval(timerInt);if(isMyTurn())autoPickGolfer();} },1000);
 }
-function updateTimerUI(){
-  const v=document.getElementById('t-val'),c=document.getElementById('timer-ring');
-  if(v) v.textContent=timerVal; if(c) c.classList.toggle('hot',timerVal<=15);
-}
-async function autoPickGolfer(){
-  const taken=new Set((pool.picks||[]).map(p=>p.golfer));
-  const avail=FIELD.find(g=>!taken.has(g.name)); if(avail) await submitPick(avail.name);
-}
+function updateTimerUI(){ const v=document.getElementById('t-val'),c=document.getElementById('timer-ring'); if(v) v.textContent=timerVal; if(c) c.classList.toggle('hot',timerVal<=15); }
+async function autoPickGolfer(){ const taken=new Set((pool.picks||[]).map(p=>p.golfer)); const avail=FIELD.find(g=>!taken.has(g.name)); if(avail) await submitPick(avail.name); }
 function renderGolferList(){
   const taken=new Set((pool.picks||[]).map(p=>p.golfer));
-  const myPickSet=new Set((pool.picks||[]).filter(p=>{ const m=pool.managers[p.managerIdx]; return getMgrEmail(m)===session.email||getMgrName(m)===session.name; }).map(p=>p.golfer));
+  const mine=new Set((pool.picks||[]).filter(p=>{ const m=pool.managers[p.managerIdx]; return gEmail(m)===S.email||gName(m)===S.name; }).map(p=>p.golfer));
   const el=document.getElementById('g-list'); if(!el) return;
   const q=((document.getElementById('g-search')||{}).value||'').toLowerCase();
   const list=q?FIELD.filter(g=>g.name.toLowerCase().includes(q)||g.cc.toLowerCase().includes(q)):FIELD;
   el.innerHTML=list.map(g=>{
-    const isTaken=taken.has(g.name),isMine=myPickSet.has(g.name);
+    const isTaken=taken.has(g.name),isMine=mine.has(g.name);
     const cls='g-item'+(isTaken?(isMine?' mine':' taken'):'');
     const click=isTaken?'':` onclick="selGolfer('${g.name.replace(/'/g,"\\'")}','${g.cc}','${g.odds}')"`;
     const pickObj=isTaken&&!isMine?(pool.picks||[]).find(p=>p.golfer===g.name):null;
-    const drafter=pickObj?`<span class="g-drafter">${getMgrName(pool.managers[pickObj.managerIdx])||''}</span>`:'';
-    return `<div class="${cls}"${click}>
-      <span class="g-rank">${g.rank}</span>
-      <span class="g-name">${g.name}${g.am?'<span class="am-tag">Am</span>':''}${g.debut&&!g.am?'<span class="debut-tag">Debut</span>':''}</span>
-      <span class="g-cc">${g.cc}</span>
-      <span class="g-odds">${g.odds}</span>
-      ${isMine?'<span class="pick-tag">Yours</span>':''}${drafter}</div>`;
+    const drafter=pickObj?`<span class="g-drafter">${gName(pool.managers[pickObj.managerIdx])||''}</span>`:'';
+    return `<div class="${cls}"${click}><span class="g-rank">${g.rank}</span><span class="g-name">${g.name}${g.am?'<span class="am-tag">Am</span>':''}${g.debut&&!g.am?'<span class="debut-tag">Debut</span>':''}</span><span class="g-cc">${g.cc}</span><span class="g-odds">${g.odds}</span>${isMine?'<span class="pick-tag">Yours</span>':''}${drafter}</div>`;
   }).join('');
 }
-function filterG(){ renderGolferList(); }
-function selGolfer(name,cc,odds){
-  if(!isMyTurn()){alert("It's not your pick yet!");return;}
-  pendingGolfer=name;
-  document.getElementById('m-name').textContent=name;
-  document.getElementById('m-info').textContent=`${cc} · ${odds}`;
-  document.getElementById('pick-modal').classList.add('open');
-}
+function filterG(){renderGolferList();}
+function selGolfer(name,cc,odds){ if(!isMyTurn()){alert("It's not your pick yet!");return;} pendingGolfer=name; document.getElementById('m-name').textContent=name; document.getElementById('m-info').textContent=`${cc} · ${odds}`; document.getElementById('pick-modal').classList.add('open'); }
 async function confirmPick(){ if(pendingGolfer) await submitPick(pendingGolfer); closeModal(); }
 function closeModal(){ document.getElementById('pick-modal').classList.remove('open'); pendingGolfer=null; }
 async function submitPick(golfer){
   try{
-    const r=await fetch('/api/pool/pick',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sessionToken:session.sessionToken,email:session.email,golfer})});
+    const r=await fetch('/api/pool/pick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:S.sessionToken,email:S.email,golfer})});
     const d=await r.json();
     if(!r.ok){alert(d.error||'Pick failed');return;}
-    pool=d.pool; clearInterval(timerInt); timerVal=pool.pickSeconds||90; updateTimerUI();
-    renderDraftUI(); if(!pool.draftComplete) startPickTimer();
+    pool=d.pool; clearInterval(timerInt); timerVal=pool.pickSeconds||90; updateTimerUI(); renderDraftUI(); if(!pool.draftComplete) startPickTimer();
   }catch{alert('Connection error.');}
 }
 
@@ -774,13 +704,9 @@ async function submitPick(golfer){
 // ═══════════════════════════════════════════════════
 async function fetchScores(force){
   if(!force&&Date.now()-lastScoreFetch<60000&&Object.keys(liveScores).length>0){renderPoolScoreboard();return;}
-  try{
-    const r=await fetch('/api/scores'); if(!r.ok) throw new Error();
-    const d=await r.json();
-    liveScores={};
-    (d.leaderboard||[]).forEach(p=>{liveScores[norm(p.name)]={toPar:p.toPar,thru:p.thru,status:p.status};});
-    lastScoreFetch=Date.now(); renderPoolScoreboard();
-  }catch{ renderPoolScoreboard(); }
+  try{ const r=await fetch('/api/scores'); if(!r.ok) throw new Error(); const d=await r.json();
+    liveScores={}; (d.leaderboard||[]).forEach(p=>{liveScores[norm(p.name)]={toPar:p.toPar,thru:p.thru,status:p.status};}); lastScoreFetch=Date.now(); renderPoolScoreboard();
+  }catch{renderPoolScoreboard();}
 }
 function norm(n){return n.toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim();}
 function getPS(name){const k=norm(name);if(liveScores[k])return liveScores[k];for(const[kk,v]of Object.entries(liveScores)){if(kk.includes(name.split(' ').pop().toLowerCase()))return v;}return null;}
@@ -790,58 +716,29 @@ function renderPoolScoreboard(){
   const teams=buildTeams().sort((a,b)=>a.total-b.total);
   el.innerHTML=teams.map((t,i)=>{
     const pos=i===0?'🥇 1st':i===1?'🥈 2nd':i===2?'🥉 3rd':`${i+1}th`;
-    const rows=t.golfers.map((g,gi)=>{
-      const dropped=gi>=4,sc=g.sc,par=sc?sc.toPar:0;
-      const cls='gr-sc '+(dropped?'even':par<0?'under':par>0?'over':'even');
-      const thru=sc?(sc.thru==='18'?'F':sc.thru||''):'';
-      return `<div class="g-row${dropped?' gr-dropped':''}">
-        <span class="gr-name">${g.name}</span><span class="gr-thru">${thru}</span>
-        <span class="${cls}">${fmtScore(par)}</span><span class="gr-note">${dropped?'dropped':''}</span>
-      </div>`;
-    }).join('');
-    const isMe=t.email===session.email||t.name===session.name;
-    return `<div class="team-card"><div class="team-hdr">
-      <div><div class="t-name">${t.name}${isMe?'<span class="badge b-green">You</span>':''}</div><div class="t-pos">${pos}</div></div>
-      <div class="t-score">${fmtScore(t.total)}</div></div>${rows}</div>`;
+    const rows=t.golfers.map((g,gi)=>{ const dropped=gi>=4,sc=g.sc,par=sc?sc.toPar:0; const cls='gr-sc '+(dropped?'even':par<0?'under':par>0?'over':'even'); const thru=sc?(sc.thru==='18'?'F':sc.thru||''):'';
+      return `<div class="g-row${dropped?' gr-dropped':''}"><span class="gr-name">${g.name}</span><span class="gr-thru">${thru}</span><span class="${cls}">${fmtScore(par)}</span><span class="gr-note">${dropped?'dropped':''}</span></div>`; }).join('');
+    const isMe=t.email===S.email||t.mgrName===S.name;
+    return `<div class="team-card"><div class="team-hdr"><div><div class="t-name">${t.mgrName}${isMe?'<span class="badge b-green">You</span>':''}</div><div class="t-pos">${pos}</div></div><div class="t-score">${fmtScore(t.total)}</div></div>${rows}</div>`;
   }).join('');
 }
-function buildTeams(){
-  return(pool.managers||[]).map((mgr,idx)=>{
-    const picks=(pool.picks||[]).filter(p=>p.managerIdx===idx);
-    const golfers=picks.map(p=>({name:p.golfer,sc:getPS(p.golfer)})).sort((a,b)=>(a.sc?.toPar??0)-(b.sc?.toPar??0));
-    const top=Math.min(4,golfers.length);
-    const total=golfers.slice(0,top).reduce((s,g)=>s+(g.sc?.toPar??0),0);
-    return{name:getMgrName(mgr),email:getMgrEmail(mgr),golfers,total};
-  });
-}
+function buildTeams(){ return(pool.managers||[]).map((mgr,idx)=>{ const picks=(pool.picks||[]).filter(p=>p.managerIdx===idx); const golfers=picks.map(p=>({name:p.golfer,sc:getPS(p.golfer)})).sort((a,b)=>(a.sc?.toPar??0)-(b.sc?.toPar??0)); const top=Math.min(4,golfers.length); const total=golfers.slice(0,top).reduce((s,g)=>s+(g.sc?.toPar??0),0); return{mgrName:gName(mgr),email:gEmail(mgr),golfers,total}; }); }
 function fmtScore(s){return s===0?'E':s>0?'+'+s:''+s;}
 setInterval(()=>{const el=document.getElementById('tc-scores');if(el&&el.style.display!=='none')fetchScores();},60000);
 
 // ═══════════════════════════════════════════════════
-// TEAMS / PICK HISTORY
+// TEAMS
 // ═══════════════════════════════════════════════════
-function renderTeams(){
-  const el=document.getElementById('teams-content');if(!el)return;
-  const picks=pool.picks||[];
-  if(!picks.length){el.innerHTML='<div style="padding:24px 16px;text-align:center;color:var(--dim);">Teams appear after the draft.</div>';return;}
-  const rounds={};
-  picks.forEach(p=>{(rounds[p.round]=rounds[p.round]||[]).push(p);});
-  let html='<div style="padding:10px 11px 4px;font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;">Pick History</div>';
-  Object.keys(rounds).sort((a,b)=>a-b).forEach(r=>{
-    html+=`<div class="r-lbl">Round ${r}</div>`;
-    rounds[r].forEach(p=>{html+=`<div class="p-row"><span class="pr-n">#${p.pick}</span><span class="pr-m">${getMgrName(pool.managers[p.managerIdx])||'?'}</span><span class="pr-g">${p.golfer}</span></div>`;});
-  });
-  el.innerHTML=html;
-}
+function renderTeams(){ const el=document.getElementById('teams-content');if(!el)return; const picks=pool.picks||[]; if(!picks.length){el.innerHTML='<div style="padding:24px 16px;text-align:center;color:var(--dim);">Teams appear after the draft.</div>';return;} const rounds={}; picks.forEach(p=>{(rounds[p.round]=rounds[p.round]||[]).push(p);}); let html='<div style="padding:10px 11px 4px;font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;">Pick History</div>'; Object.keys(rounds).sort((a,b)=>a-b).forEach(r=>{ html+=`<div class="r-lbl">Round ${r}</div>`; rounds[r].forEach(p=>{html+=`<div class="p-row"><span class="pr-n">#${p.pick}</span><span class="pr-m">${gName(pool.managers[p.managerIdx])||'?'}</span><span class="pr-g">${p.golfer}</span></div>`;}); }); el.innerHTML=html; }
 
 // ═══════════════════════════════════════════════════
 // ADMIN
 // ═══════════════════════════════════════════════════
 function renderAdmin(){
-  document.getElementById('a-pool-name').value  = pool.poolName||'';
-  document.getElementById('a-draft-time').value = pool.draftTime?pool.draftTime.slice(0,16):'';
-  document.getElementById('a-picks').value       = pool.picksPerPerson||5;
-  document.getElementById('a-pick-secs').value   = pool.pickSeconds||90;
+  document.getElementById('a-pool-name').value =pool.poolName||'';
+  document.getElementById('a-draft-time').value=pool.draftTime?pool.draftTime.slice(0,16):'';
+  document.getElementById('a-picks').value      =pool.picksPerPerson||5;
+  document.getElementById('a-pick-secs').value  =pool.pickSeconds||90;
   const ds=document.getElementById('a-draft-status'),sb=document.getElementById('a-start-btn');
   if(pool.draftComplete){ds.textContent='✅ Draft complete.';sb.disabled=true;sb.style.opacity='.4';}
   else if(pool.draftStarted){ds.textContent='🟢 Draft is live!';sb.disabled=true;sb.style.opacity='.4';}
@@ -852,75 +749,16 @@ function renderAdmin(){
 function renderAdminMgrs(){
   const el=document.getElementById('a-mgr-list');if(!el)return;
   if(!editMgrs) editMgrs=[...(pool.managers||[])];
-  el.innerHTML=editMgrs.map((m,i)=>`
-    <div class="c-row">
-      <div class="c-av">${(getMgrName(m)||'?')[0].toUpperCase()}</div>
-      <div class="c-info f1">
-        <div class="c-nm">${getMgrName(m)}${i===0?'<span class="badge b-gold">1st pick</span>':''}</div>
-        <div class="c-em">${getMgrEmail(m)||''}</div>
-      </div>
-      <button class="c-up" onclick="moveMgr(${i},-1)">▲</button>
-      <button class="c-up" onclick="moveMgr(${i},1)">▼</button>
-      <button class="c-rm" onclick="removeMgr(${i})">×</button>
-    </div>`).join('')||'<div class="muted" style="padding:8px;font-size:12px;">No managers yet — they appear when players sign in.</div>';
+  el.innerHTML=editMgrs.map((m,i)=>`<div class="c-row"><div class="c-av">${(gName(m)||'?')[0].toUpperCase()}</div><div class="c-info f1"><div class="c-nm">${gName(m)}${i===0?'<span class="badge b-gold">1st pick</span>':''}</div><div class="c-em">${gEmail(m)||''}</div></div><button class="c-up" onclick="moveMgr(${i},-1)">▲</button><button class="c-up" onclick="moveMgr(${i},1)">▼</button><button class="c-rm" onclick="removeMgr(${i})">×</button></div>`).join('')||'<div class="muted" style="padding:8px;font-size:12px;">No managers yet — they appear when players create an account.</div>';
 }
 function moveMgr(i,dir){const j=i+dir;if(j<0||j>=editMgrs.length)return;[editMgrs[i],editMgrs[j]]=[editMgrs[j],editMgrs[i]];renderAdminMgrs();}
 function removeMgr(i){editMgrs.splice(i,1);renderAdminMgrs();}
 function randomizeMgrs(){if(!editMgrs)editMgrs=[...(pool.managers||[])];const f=editMgrs[0],r=editMgrs.slice(1);for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}editMgrs=[f,...r];renderAdminMgrs();}
-async function saveMgrs(){
-  const err=document.getElementById('a-mgr-err'),ok=document.getElementById('a-mgr-ok');
-  err.classList.remove('show');ok.classList.remove('show');
-  try{
-    const r=await fetch('/api/pool/managers',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({commishPassword:session.commishPassword,managers:editMgrs})});
-    const d=await r.json();
-    if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}
-    pool=d.pool;ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),3000);renderLobby();
-  }catch{err.textContent='Connection error.';err.classList.add('show');}
-}
-async function saveSettings(){
-  const err=document.getElementById('a-settings-err'),ok=document.getElementById('a-settings-ok');
-  err.classList.remove('show');ok.classList.remove('show');
-  try{
-    const r=await fetch('/api/pool/settings',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({commishPassword:session.commishPassword,
-        poolName:document.getElementById('a-pool-name').value,
-        draftTime:document.getElementById('a-draft-time').value,
-        picksPerPerson:document.getElementById('a-picks').value,
-        pickSeconds:document.getElementById('a-pick-secs').value})});
-    const d=await r.json();
-    if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}
-    const pr=await fetch('/api/pool');pool=await pr.json();
-    document.getElementById('main-pool-name').textContent=pool.poolName;
-    document.getElementById('rules-picks').textContent=pool.picksPerPerson||5;
-    document.getElementById('rules-secs').textContent=pool.pickSeconds||90;
-    ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),3000);
-  }catch{err.textContent='Connection error.';err.classList.add('show');}
-}
-async function startDraftNow(){
-  const err=document.getElementById('a-draft-err'),ok=document.getElementById('a-draft-ok');
-  err.classList.remove('show');ok.classList.remove('show');
-  try{
-    const r=await fetch('/api/pool/start',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({commishPassword:session.commishPassword})});
-    const d=await r.json();
-    if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}
-    pool=d.pool;ok.textContent='Draft started! 🏌️';ok.classList.add('show');
-    renderAdmin();renderDraftUI();startPickTimer();
-  }catch{err.textContent='Connection error.';err.classList.add('show');}
-}
-async function resetDraft(){
-  if(!confirm('Reset the draft? All picks cleared, managers stay.'))return;
-  const err=document.getElementById('a-draft-err'),ok=document.getElementById('a-draft-ok');
-  try{
-    const r=await fetch('/api/pool/reset',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({commishPassword:session.commishPassword})});
-    const d=await r.json();
-    if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}
-    pool=d.pool;editMgrs=null;ok.textContent='Draft reset.';ok.classList.add('show');
-    clearInterval(timerInt);renderAdmin();renderDraftUI();
-  }catch{err.textContent='Connection error.';err.classList.add('show');}
-}
+async function saveMgrs(){ const err=document.getElementById('a-mgr-err'),ok=document.getElementById('a-mgr-ok'); err.classList.remove('show');ok.classList.remove('show'); try{ const r=await fetch('/api/pool/managers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword,managers:editMgrs})}); const d=await r.json(); if(!r.ok){err.textContent=d.error;err.classList.add('show');return;} pool=d.pool;ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),3000);renderLobby(); }catch{err.textContent='Connection error.';err.classList.add('show');} }
+async function saveSettings(){ const err=document.getElementById('a-settings-err'),ok=document.getElementById('a-settings-ok'); err.classList.remove('show');ok.classList.remove('show'); try{ const r=await fetch('/api/pool/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword,poolName:document.getElementById('a-pool-name').value,draftTime:document.getElementById('a-draft-time').value,picksPerPerson:document.getElementById('a-picks').value,pickSeconds:document.getElementById('a-pick-secs').value})}); const d=await r.json(); if(!r.ok){err.textContent=d.error;err.classList.add('show');return;} const pr=await fetch('/api/pool');pool=await pr.json(); document.getElementById('main-pool-name').textContent=pool.poolName; document.getElementById('rules-picks').textContent=pool.picksPerPerson||5; document.getElementById('rules-secs').textContent=pool.pickSeconds||90; ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),3000); }catch{err.textContent='Connection error.';err.classList.add('show');} }
+async function startDraftNow(){ const err=document.getElementById('a-draft-err'),ok=document.getElementById('a-draft-ok'); err.classList.remove('show');ok.classList.remove('show'); try{ const r=await fetch('/api/pool/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword})}); const d=await r.json(); if(!r.ok){err.textContent=d.error;err.classList.add('show');return;} pool=d.pool;ok.textContent='Draft started! 🏌️';ok.classList.add('show');renderAdmin();renderDraftUI();startPickTimer(); }catch{err.textContent='Connection error.';err.classList.add('show');} }
+async function resetDraft(){ if(!confirm('Reset the draft? All picks cleared, managers stay.'))return; const err=document.getElementById('a-draft-err'),ok=document.getElementById('a-draft-ok'); try{ const r=await fetch('/api/pool/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword})}); const d=await r.json(); if(!r.ok){err.textContent=d.error;err.classList.add('show');return;} pool=d.pool;editMgrs=null;ok.textContent='Draft reset.';ok.classList.add('show');clearInterval(timerInt);renderAdmin();renderDraftUI(); }catch{err.textContent='Connection error.';err.classList.add('show');} }
+async function resetPlayerPassword(){ const err=document.getElementById('a-reset-err'),ok=document.getElementById('a-reset-ok'); err.classList.remove('show');ok.classList.remove('show'); const email=document.getElementById('a-reset-email').value.trim(); const pass=document.getElementById('a-reset-pass').value.trim(); if(!email||!pass){err.textContent='Enter email and new password.';err.classList.add('show');return;} try{ const r=await fetch('/api/auth/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword,email,newPassword:pass})}); const d=await r.json(); if(!r.ok){err.textContent=d.error;err.classList.add('show');return;} ok.textContent=d.message||'Password reset!';ok.classList.add('show');document.getElementById('a-reset-email').value='';document.getElementById('a-reset-pass').value=''; }catch{err.textContent='Connection error.';err.classList.add('show');} }
 </script>
 </body>
 </html>

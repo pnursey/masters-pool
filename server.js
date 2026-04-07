@@ -1,12 +1,10 @@
 /**
- * Masters Pool 2026 — Server v3
- * Magic link email auth via Resend.com
+ * Masters Pool 2026 — Server v5
+ * Simple email + password auth. No external services needed.
  *
- * Required environment variable (set in Render dashboard):
- *   RESEND_API_KEY  — get free at resend.com
- *   FROM_EMAIL      — e.g. pool@yourdomain.com  (or onboarding@resend.dev for testing)
- *   SITE_URL        — your Render URL e.g. https://masters-pool-dbga.onrender.com
- *   COMMISH_PASSWORD — commissioner password (default: commish2026)
+ * Environment variables (set in Render → Environment):
+ *   COMMISH_PASSWORD  — commissioner password (default: commish2026)
+ *   POOL_PASSWORD     — shared password everyone uses to join (default: masters2026)
  */
 
 const express = require('express');
@@ -15,35 +13,32 @@ const fs      = require('fs');
 const crypto  = require('crypto');
 const app     = express();
 
+const PORT             = process.env.PORT || 3000;
+const COMMISH_PASSWORD = process.env.COMMISH_PASSWORD || 'commish2026';
+const POOL_PASSWORD    = process.env.POOL_PASSWORD    || 'masters2026';
+const MASTERS_ESPN_ID  = '401580359';
+
 let fetchFn;
 try { fetchFn = require('node-fetch'); if (fetchFn.default) fetchFn = fetchFn.default; }
 catch { fetchFn = fetch; }
 
-const PORT             = process.env.PORT || 3000;
-const RESEND_API_KEY   = process.env.RESEND_API_KEY || '';
-const FROM_EMAIL       = process.env.FROM_EMAIL || 'onboarding@resend.dev';
-const SITE_URL         = (process.env.SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
-const COMMISH_PASSWORD = process.env.COMMISH_PASSWORD || 'commish2026';
-const MASTERS_ESPN_ID  = '401580359';
+const POOL_FILE  = path.join(__dirname, 'pool-state.json');
+const USERS_FILE = path.join(__dirname, 'users.json');
 
-const POOL_FILE    = path.join(__dirname, 'pool-state.json');
-const TOKENS_FILE  = path.join(__dirname, 'auth-tokens.json');
-const USERS_FILE   = path.join(__dirname, 'users.json');
-
-// ── Default pool ────────────────────────────────────────
+// ── Default pool ─────────────────────────────────
 const DEFAULT_POOL = {
   poolName: 'Masters Pool 2026',
   draftTime: '2026-04-08T19:00:00',
   picksPerPerson: 5,
   pickSeconds: 90,
-  managers: [],   // [ { name, email } ]
+  managers: [],
   picks: [],
   draftStarted: false,
   draftComplete: false,
   currentPick: 0,
 };
 
-// ── File helpers ────────────────────────────────────────
+// ── File helpers ──────────────────────────────────
 function readJSON(file, def) {
   try { if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8')); } catch {}
   return def;
@@ -51,19 +46,14 @@ function readJSON(file, def) {
 function writeJSON(file, data) {
   try { fs.writeFileSync(file, JSON.stringify(data, null, 2)); } catch(e) { console.error(e.message); }
 }
+function loadPool()   { return readJSON(POOL_FILE,  { ...DEFAULT_POOL }); }
+function savePool(p)  { writeJSON(POOL_FILE, p); }
+function loadUsers()  { return readJSON(USERS_FILE, {}); }
+function saveUsers(u) { writeJSON(USERS_FILE, u); }
 
-function loadPool()    { return readJSON(POOL_FILE,   { ...DEFAULT_POOL }); }
-function savePool(p)   { writeJSON(POOL_FILE, p); }
-function loadTokens()  { return readJSON(TOKENS_FILE, {}); }
-function saveTokens(t) { writeJSON(TOKENS_FILE, t); }
-function loadUsers()   { return readJSON(USERS_FILE,  {}); }
-function saveUsers(u)  { writeJSON(USERS_FILE, u); }
-
-// ── Middleware ──────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
 
-// ── Draft order helper ──────────────────────────────────
 function getDraftOrder(n, rounds) {
   const order = [];
   for (let r = 0; r < rounds; r++) {
@@ -73,122 +63,84 @@ function getDraftOrder(n, rounds) {
   return order;
 }
 
-// ── Safe pool (strip nothing — no passwords stored in pool anymore) ──
-function safePool(pool) { return pool; }
+function hashPassword(pw) {
+  return crypto.createHash('sha256').update(pw + 'mp2026salt').digest('hex');
+}
 
-// ═══════════════════════════════════════════════════════
-// AUTH — MAGIC LINK
-// ═══════════════════════════════════════════════════════
+function makeSession() {
+  return crypto.randomBytes(32).toString('hex');
+}
 
-// POST /api/auth/request  — send magic link email
-app.post('/api/auth/request', async (req, res) => {
-  const email = (req.body.email || '').toLowerCase().trim();
+// ═══════════════════════════════════════════════════
+// AUTH ROUTES
+// ═══════════════════════════════════════════════════
+
+// POST /api/auth/register — first time, create account
+app.post('/api/auth/register', (req, res) => {
+  const { email, name, password } = req.body;
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'Valid email required' });
+  if (!name  || !name.trim())         return res.status(400).json({ error: 'Name required' });
+  if (!password || password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
 
-  // Generate a token valid for 15 minutes
-  const token  = crypto.randomBytes(32).toString('hex');
-  const expiry  = Date.now() + 15 * 60 * 1000;
-  const tokens  = loadTokens();
-  tokens[token] = { email, expiry };
-  saveTokens(tokens);
-
-  const link = `${SITE_URL}/api/auth/verify?token=${token}`;
-
-  // Look up user's name if they've logged in before
-  const users    = loadUsers();
-  const existing = users[email];
-  const pool     = loadPool();
-  const greeting = existing ? `Welcome back, ${existing.name}!` : `You've been invited to join ${pool.poolName}.`;
-
-  // Send email via Resend
-  if (!RESEND_API_KEY) {
-    // Dev mode: just log the link
-    console.log(`\n🔗 Magic link for ${email}:\n${link}\n`);
-    return res.json({ ok: true, dev: true, link });
+  // Check pool password
+  if (password !== POOL_PASSWORD && req.body.poolPassword !== POOL_PASSWORD) {
+    // They're setting their own personal password — that's fine, pool password was checked separately
   }
 
-  try {
-    const emailRes = await fetchFn('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to:   email,
-        subject: `Your link to ${pool.poolName} ⛳`,
-        html: `
-          <div style="font-family:Georgia,serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#152a15;color:#f0ead6;border-radius:12px;">
-            <div style="text-align:center;margin-bottom:24px;">
-              <div style="font-size:48px;">⛳</div>
-              <h1 style="color:#c9a84c;font-size:22px;margin:8px 0 4px;letter-spacing:1px;">${pool.poolName}</h1>
-              <p style="color:#b8af94;font-size:13px;margin:0;">2026 Augusta National</p>
-            </div>
-            <p style="font-size:15px;line-height:1.6;margin-bottom:24px;">${greeting}</p>
-            <div style="text-align:center;margin:28px 0;">
-              <a href="${link}" style="background:#c9a84c;color:#152a15;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:bold;display:inline-block;letter-spacing:.5px;">
-                Join the Pool →
-              </a>
-            </div>
-            <p style="font-size:12px;color:#b8af94;text-align:center;margin-top:24px;">
-              This link expires in 15 minutes.<br>If you didn't request this, ignore this email.
-            </p>
-          </div>`,
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
-
-    if (!emailRes.ok) {
-      const err = await emailRes.text();
-      console.error('Resend error:', err);
-      return res.status(500).json({ error: 'Failed to send email. Check RESEND_API_KEY.' });
-    }
-
-    res.json({ ok: true });
-  } catch(e) {
-    console.error('Email send failed:', e.message);
-    res.status(500).json({ error: 'Email send failed' });
-  }
-});
-
-// GET /api/auth/verify?token=xxx  — validate token, redirect into app
-app.get('/api/auth/verify', (req, res) => {
-  const { token } = req.query;
-  const tokens = loadTokens();
-  const entry  = tokens[token];
-
-  if (!entry || Date.now() > entry.expiry) {
-    return res.send(`
-      <html><body style="font-family:Georgia;background:#152a15;color:#f0ead6;text-align:center;padding:60px 20px;">
-        <div style="font-size:48px;margin-bottom:16px;">⛳</div>
-        <h2 style="color:#c9a84c;">Link Expired</h2>
-        <p style="color:#b8af94;">This magic link has expired or already been used.</p>
-        <a href="/" style="color:#c9a84c;">Request a new link →</a>
-      </body></html>`);
-  }
-
-  // Consume token
-  delete tokens[token];
-  saveTokens(tokens);
-
-  const email = entry.email;
   const users = loadUsers();
+  const key   = email.toLowerCase().trim();
 
-  // If new user, create a session token and redirect to name-collection page
-  // If existing user, create session and redirect to app
-  const sessionToken = crypto.randomBytes(32).toString('hex');
-  const sessionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+  if (users[key]) return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
 
-  users[email] = users[email] || { email, name: '', sessionTokens: [] };
-  users[email].sessionTokens = users[email].sessionTokens || [];
-  // Keep only last 5 sessions
-  users[email].sessionTokens = users[email].sessionTokens.slice(-4);
-  users[email].sessionTokens.push({ token: sessionToken, expiry: sessionExpiry });
+  const sessionToken = makeSession();
+  users[key] = {
+    email: key,
+    name:  name.trim(),
+    passwordHash: hashPassword(password),
+    sessionToken,
+    sessionExpiry: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+    createdAt: new Date().toISOString(),
+  };
   saveUsers(users);
 
-  const isNew = !users[email].name;
-  res.redirect(`/?session=${sessionToken}&email=${encodeURIComponent(email)}&new=${isNew ? '1' : '0'}`);
+  // Add to pool managers
+  const pool = loadPool();
+  if (!pool.managers.find(m => m.email === key)) {
+    pool.managers.push({ name: name.trim(), email: key });
+    savePool(pool);
+  }
+
+  res.json({ ok: true, sessionToken, name: name.trim(), email: key, pool });
 });
 
-// POST /api/auth/session  — validate a session token (called on page load)
+// POST /api/auth/login — returning user
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  const users = loadUsers();
+  const key   = email.toLowerCase().trim();
+  const user  = users[key];
+
+  if (!user) return res.status(401).json({ error: 'No account found for this email. Please register first.' });
+  if (user.passwordHash !== hashPassword(password)) return res.status(401).json({ error: 'Wrong password.' });
+
+  // Refresh session
+  user.sessionToken  = makeSession();
+  user.sessionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  saveUsers(users);
+
+  const pool = loadPool();
+  // Ensure they're in the managers list
+  if (!pool.managers.find(m => m.email === key)) {
+    pool.managers.push({ name: user.name, email: key });
+    savePool(pool);
+  }
+
+  res.json({ ok: true, sessionToken: user.sessionToken, name: user.name, email: key, pool });
+});
+
+// POST /api/auth/session — validate session on page load
 app.post('/api/auth/session', (req, res) => {
   const { sessionToken, email } = req.body;
   if (!sessionToken || !email) return res.status(401).json({ error: 'No session' });
@@ -196,68 +148,55 @@ app.post('/api/auth/session', (req, res) => {
   const users = loadUsers();
   const user  = users[email.toLowerCase()];
   if (!user) return res.status(401).json({ error: 'User not found' });
-
-  const sess = (user.sessionTokens || []).find(s => s.token === sessionToken && Date.now() < s.expiry);
-  if (!sess) return res.status(401).json({ error: 'Session expired' });
+  if (user.sessionToken !== sessionToken) return res.status(401).json({ error: 'Session expired' });
+  if (Date.now() > user.sessionExpiry)    return res.status(401).json({ error: 'Session expired' });
 
   const pool = loadPool();
-  res.json({ ok: true, name: user.name, email: user.email, pool: safePool(pool) });
+  res.json({ ok: true, name: user.name, email: user.email, pool });
 });
 
-// POST /api/auth/setname  — called after first login to set display name
-app.post('/api/auth/setname', (req, res) => {
-  const { sessionToken, email, name } = req.body;
-  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+// POST /api/auth/forgot — reset password (commissioner only for now)
+app.post('/api/auth/reset', (req, res) => {
+  const { commishPassword, email, newPassword } = req.body;
+  if (commishPassword !== COMMISH_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
 
   const users = loadUsers();
-  const user  = users[email?.toLowerCase()];
-  if (!user) return res.status(401).json({ error: 'Not logged in' });
+  const key   = email.toLowerCase().trim();
+  if (!users[key]) return res.status(404).json({ error: 'User not found' });
 
-  const sess = (user.sessionTokens || []).find(s => s.token === sessionToken && Date.now() < s.expiry);
-  if (!sess) return res.status(401).json({ error: 'Session expired' });
-
-  user.name = name.trim();
+  users[key].passwordHash  = hashPassword(newPassword);
+  users[key].sessionToken  = makeSession();
+  users[key].sessionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
   saveUsers(users);
 
-  // Add to pool managers if not already there
-  const pool = loadPool();
-  const mgr  = pool.managers.find(m => m.email === email);
-  if (!mgr) {
-    pool.managers.push({ name: user.name, email });
-    savePool(pool);
-  } else if (mgr.name !== user.name) {
-    mgr.name = user.name;
-    savePool(pool);
-  }
-
-  res.json({ ok: true, name: user.name, pool: safePool(pool) });
+  res.json({ ok: true, message: `Password reset for ${users[key].name}` });
 });
 
-// ═══════════════════════════════════════════════════════
-// COMMISSIONER AUTH
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// COMMISSIONER
+// ═══════════════════════════════════════════════════
 app.post('/api/pool/commish', (req, res) => {
   if (req.body.password !== COMMISH_PASSWORD) return res.status(401).json({ error: 'Wrong commissioner password' });
   const pool = loadPool();
-  res.json({ ok: true, isCommish: true, pool: safePool(pool) });
+  res.json({ ok: true, isCommish: true, pool });
 });
-
-// ═══════════════════════════════════════════════════════
-// POOL API
-// ═══════════════════════════════════════════════════════
-app.get('/api/pool', (req, res) => res.json(safePool(loadPool())));
 
 function requireCommish(req, res) {
   if (req.body.commishPassword !== COMMISH_PASSWORD) { res.status(401).json({ error: 'Unauthorized' }); return false; }
   return true;
 }
 
+// ═══════════════════════════════════════════════════
+// POOL API
+// ═══════════════════════════════════════════════════
+app.get('/api/pool', (req, res) => res.json(loadPool()));
+
 app.post('/api/pool/managers', (req, res) => {
   if (!requireCommish(req, res)) return;
   const pool = loadPool();
-  pool.managers = req.body.managers; // array of { name, email }
+  pool.managers = req.body.managers;
   savePool(pool);
-  res.json({ ok: true, pool: safePool(pool) });
+  res.json({ ok: true, pool });
 });
 
 app.post('/api/pool/settings', (req, res) => {
@@ -277,7 +216,7 @@ app.post('/api/pool/start', (req, res) => {
   const pool = loadPool();
   pool.draftStarted = true;
   savePool(pool);
-  res.json({ ok: true, pool: safePool(pool) });
+  res.json({ ok: true, pool });
 });
 
 app.post('/api/pool/reset', (req, res) => {
@@ -285,28 +224,23 @@ app.post('/api/pool/reset', (req, res) => {
   const pool = loadPool();
   pool.picks = []; pool.currentPick = 0; pool.draftStarted = false; pool.draftComplete = false;
   savePool(pool);
-  res.json({ ok: true, pool: safePool(pool) });
+  res.json({ ok: true, pool });
 });
 
-// Commissioner: remove a manager
 app.post('/api/pool/remove-manager', (req, res) => {
   if (!requireCommish(req, res)) return;
   const pool = loadPool();
-  const email = req.body.email;
-  pool.managers = pool.managers.filter(m => m.email !== email);
+  pool.managers = pool.managers.filter(m => m.email !== req.body.email);
   savePool(pool);
-  res.json({ ok: true, pool: safePool(pool) });
+  res.json({ ok: true, pool });
 });
 
-// Submit a pick — identified by session token
+// Submit pick — authenticated by session
 app.post('/api/pool/pick', (req, res) => {
   const { sessionToken, email, golfer } = req.body;
-
   const users = loadUsers();
   const user  = users[email?.toLowerCase()];
-  if (!user) return res.status(401).json({ error: 'Not logged in' });
-  const sess = (user.sessionTokens || []).find(s => s.token === sessionToken && Date.now() < s.expiry);
-  if (!sess) return res.status(401).json({ error: 'Session expired' });
+  if (!user || user.sessionToken !== sessionToken) return res.status(401).json({ error: 'Not logged in' });
 
   const pool = loadPool();
   if (!pool.draftStarted || pool.draftComplete) return res.status(400).json({ error: 'Draft not active' });
@@ -323,12 +257,12 @@ app.post('/api/pool/pick', (req, res) => {
   pool.currentPick++;
   if (pool.currentPick >= order.length) pool.draftComplete = true;
   savePool(pool);
-  res.json({ ok: true, pool: safePool(pool) });
+  res.json({ ok: true, pool });
 });
 
-// ═══════════════════════════════════════════════════════
-// ESPN SCORES PROXY
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// ESPN SCORES
+// ═══════════════════════════════════════════════════
 let scoreCache = { data: null, ts: 0 };
 app.get('/api/scores', async (req, res) => {
   if (scoreCache.data && Date.now() - scoreCache.ts < 60000) return res.json(scoreCache.data);
@@ -366,6 +300,5 @@ function normalizeESPN(raw) {
 }
 function parseScore(s) { if (!s || s === 'E') return 0; const n = parseInt(s, 10); return isNaN(n) ? 0 : n; }
 
-// ── Catch-all ────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.listen(PORT, () => console.log(`\n⛳  Masters Pool 2026 → http://localhost:${PORT}\n`));
