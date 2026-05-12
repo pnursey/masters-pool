@@ -520,12 +520,24 @@ function showTab(t){
 function startPolling(){
   clearInterval(pollInt);
   pollInt=setInterval(async()=>{
-    try{ const r=await fetch('/api/pool'); if(!r.ok) return; pool=await r.json();
+    try{
+      const r=await fetch('/api/pool'); if(!r.ok) return;
+      const newPool=await r.json();
+      const pickChanged=newPool.currentPick!==pool.currentPick;
+      pool=newPool;
       const active=['lobby','draft'].find(t=>{ const el=document.getElementById('tc-'+t); return el&&el.style.display!=='none'; });
       if(active==='lobby') renderLobby();
-      if(active==='draft') renderDraftUI();
+      if(active==='draft'){ if(pickChanged) renderDraftUI(); syncTimerFromServer(); }
     }catch{}
-  },10000);
+  },3000);
+}
+
+function syncTimerFromServer(){
+  if(!pool.pickDeadline||pool.draftComplete||!pool.draftStarted) return;
+  const secsLeft=Math.max(0,Math.round((pool.pickDeadline-Date.now())/1000));
+  timerVal=secsLeft;
+  updateTimerUI();
+  if(secsLeft===0&&isMyTurn()) autoPickGolfer();
 }
 
 function renderLobby(){
@@ -573,8 +585,12 @@ function renderDraftUI(){
   renderGolferList();
 }
 function startPickTimer(){
-  clearInterval(timerInt); timerVal=pool.pickSeconds||90; updateTimerUI();
-  timerInt=setInterval(()=>{ timerVal--; updateTimerUI(); if(timerVal<=0){clearInterval(timerInt);if(isMyTurn())autoPickGolfer();} },1000);
+  // Timer is now driven by server deadline (pool.pickDeadline).
+  // We just tick every second to update the display from the server timestamp.
+  // This means all browsers stay perfectly in sync automatically.
+  clearInterval(timerInt);
+  syncTimerFromServer(); // immediate sync
+  timerInt=setInterval(()=>{ syncTimerFromServer(); },1000);
 }
 function updateTimerUI(){ const v=document.getElementById('t-val'),c=document.getElementById('timer-ring'); if(v) v.textContent=timerVal; if(c) c.classList.toggle('hot',timerVal<=15); }
 async function autoPickGolfer(){ const taken=new Set((pool.picks||[]).map(p=>p.golfer)); const avail=FIELD.find(g=>!taken.has(g.name)); if(avail) await submitPick(avail.name); }
@@ -604,7 +620,7 @@ async function submitPick(golfer){
     const r=await fetch('/api/pool/pick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:S.sessionToken,email:S.email,golfer})});
     const d=await r.json();
     if(!r.ok){alert(d.error||'Pick failed');return;}
-    pool=d.pool; clearInterval(timerInt); timerVal=pool.pickSeconds||90; updateTimerUI(); renderDraftUI(); if(!pool.draftComplete) startPickTimer();
+    pool=d.pool; renderDraftUI(); if(!pool.draftComplete){ syncTimerFromServer(); } // server sets new deadline, we just sync
   }catch{alert('Connection error.');}
 }
 
