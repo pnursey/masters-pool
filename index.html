@@ -352,7 +352,7 @@ const FIELD = [
   {name:"Scottie Scheffler",cc:"USA",rank:1,odds:"+350"},
   {name:"Rory McIlroy",cc:"NIR",rank:2,odds:"+500"},
   {name:"Cameron Young",cc:"USA",rank:3,odds:"+800"},
-  {name:"Matthew Fitzpatrick",cc:"ENG",rank:4,odds:"+1000"},
+  {name:"Matt Fitzpatrick",cc:"ENG",rank:4,odds:"+1000"},
   {name:"Xander Schauffele",cc:"USA",rank:5,odds:"+1100"},
   {name:"Collin Morikawa",cc:"USA",rank:6,odds:"+1200"},
   {name:"Ludvig Åberg",cc:"SWE",rank:7,odds:"+1400"},
@@ -717,8 +717,38 @@ async function fetchScores(force){
     liveScores={}; (d.leaderboard||[]).forEach(p=>{liveScores[norm(p.name)]={toPar:p.toPar,thru:p.thru,status:p.status,state:p.state};}); lastScoreFetch=Date.now(); renderPoolScoreboard();
   }catch{renderPoolScoreboard();}
 }
-function norm(n){return n.toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim();}
-function getPS(name){const k=norm(name);if(liveScores[k])return liveScores[k];for(const[kk,v]of Object.entries(liveScores)){if(kk.includes(name.split(' ').pop().toLowerCase()))return v;}return null;}
+function norm(n){
+  // Normalize name: lowercase, remove accents/special chars, fix common abbreviations
+  let s=n.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // remove accents (Åberg→aberg)
+    .replace(/[^a-z ]/g,'')
+    .replace(/\s+/g,' ').trim();
+  // Handle common ESPN name variations
+  s=s.replace(/^matthew /,'matt ')
+     .replace(/^christopher /,'chris ')
+     .replace(/^robert /,'rob ')
+     .replace(/^thomas /,'tom ')
+     .replace(/^nicolai /,'nicolai ');
+  return s;
+}
+function getPS(name){
+  const k=norm(name);
+  // 1. Try exact full name match first
+  if(liveScores[k]) return liveScores[k];
+  // 2. Try first + last name match (handles accents/abbreviations)
+  const parts=k.split(' ');
+  const first=parts[0], last=parts[parts.length-1];
+  for(const[kk,v] of Object.entries(liveScores)){
+    const kkparts=kk.split(' ');
+    const kkfirst=kkparts[0], kklast=kkparts[kkparts.length-1];
+    // Must match BOTH first and last name to avoid Fitzpatrick confusion
+    if(kklast===last && kkfirst===first) return v;
+  }
+  // 3. Last resort: last name only if it's unique (not shared)
+  const lastMatches=Object.keys(liveScores).filter(kk=>kk.split(' ').pop()===last);
+  if(lastMatches.length===1) return liveScores[lastMatches[0]];
+  return null;
+}
 function renderPoolScoreboard(){
   const el=document.getElementById('score-list');if(!el)return;
   if(!(pool.picks&&pool.picks.length)){el.innerHTML='<div style="padding:24px;text-align:center;color:var(--dim);">Scores appear after the draft and once the PGA Championship begins May 15.</div>';return;}
