@@ -761,7 +761,7 @@ function renderPoolScoreboard(){
   el.innerHTML=teams.map((t,i)=>{
     const pos=i===0?'🥇 1st':i===1?'🥈 2nd':i===2?'🥉 3rd':`${i+1}th`;
     const rows=t.golfers.map((g,gi)=>{ const dropped=gi>=4,sc=g.sc,par=sc?sc.toPar:0; const cls='gr-sc '+(dropped?'even':par<0?'under':par>0?'over':'even'); const notStarted=!sc?.thru||sc?.thru==='0'; const thru=sc?(notStarted&&sc?.toPar===0?'—':(sc.thru==='18'?'F':sc.thru||'')):'—';
-      return `<div class="g-row${dropped?' gr-dropped':''}"><span class="gr-name">${g.name}</span><span class="gr-thru">${thru}</span><span class="${cls}">${fmtScore(par)}</span><span class="gr-note">${dropped?'dropped':''}</span></div>`; }).join('');
+      return `<div class="g-row${dropped?' gr-dropped':''}"><span class="gr-name">${g.name}</span><span class="${cls}">${fmtScore(par)}</span><span class="gr-note">${dropped?'dropped':''}</span></div>`; }).join('');
     const isMe=t.email===S.email||t.mgrName===S.name;
     return `<div class="team-card"><div class="team-hdr"><div><div class="t-name">${t.mgrName}${isMe?'<span class="badge b-green">You</span>':''}</div><div class="t-pos">${pos}</div></div><div class="t-score">${fmtScore(t.total)}</div></div>${rows}</div>`;
   }).join('');
