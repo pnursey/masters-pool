@@ -483,17 +483,25 @@ async function fetchESPNScores() {
 }
 
 function normalizeSlashGolf(data) {
-  // Slash Golf leaderboard response structure
-  const players = data?.leaderboard || data?.results?.leaderboard || [];
-  const round   = data?.roundId || data?.results?.roundId || '1';
-  const status  = data?.status  || data?.results?.status  || 'In Progress';
+  // Slash Golf actual response structure (confirmed from live data):
+  // { orgId, year, tournId, status, roundId, leaderboardRows: [...] }
+  // Each row: { lastName, firstName, playerId, isAmateur, courseId,
+  //             position, total, currentRoundScore, totalStrokes,
+  //             currentHole, status, totalStrokes, cutLines }
+  const players = data?.leaderboardRows || data?.leaderboard || [];
+  const round   = data?.roundId || '1';
+  const status  = data?.status  || 'In Progress';
 
   const leaderboard = players.map(p => {
-    const name   = `${p.firstName || ''} ${p.lastName || ''}`.trim();
-    const toPar  = parseInt(p.totalStrokes || p.toPar || 0, 10) || 0;
-    const thru   = p.thru || p.holesPlayed || '';
-    return { name, toPar, thru, status: p.status || '' };
+    const name  = `${p.firstName || ''} ${p.lastName || ''}`.trim();
+    // "total" field is like "-4", "E", "+2"
+    const toPar = parseScore(p.total || 'E');
+    const thru  = p.currentHole ? String(p.currentHole) : '';
+    const pStatus = p.status || '';
+    return { name, toPar, thru, status: pStatus };
   }).sort((a, b) => a.toPar - b.toPar);
+
+  console.log(`Slash Golf parsed: ${leaderboard.length} players, leader: ${leaderboard[0]?.name} ${leaderboard[0]?.toPar}`);
 
   return {
     tournament: 'PGA Championship 2026',
