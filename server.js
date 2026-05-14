@@ -428,14 +428,23 @@ app.post('/api/pool/pick', async (req, res) => {
 // ═══════════════════════════════════════════════════
 let scoreCache = { data: null, ts: 0 };
 app.get('/api/scores', async (req, res) => {
-  if (scoreCache.data && Date.now() - scoreCache.ts < 600000) // 10 min cache return res.json(scoreCache.data);
+  // Return cached data if fresh (10 min)
+  if (scoreCache.data && Date.now() - scoreCache.ts < 600000) {
+    return res.json(scoreCache.data);
+  }
+  // Hard 8-second timeout so site never gets stuck loading
   try {
-    const data = await fetchESPNScores();
+    const data = await Promise.race([
+      fetchESPNScores(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+    ]);
     scoreCache = { data, ts: Date.now() };
     res.json(data);
   } catch(err) {
+    console.warn('Score fetch failed:', err.message);
     if (scoreCache.data) return res.json({ ...scoreCache.data, _stale: true });
-    res.status(503).json({ error: 'Scores unavailable' });
+    // Return empty leaderboard so app doesn't hang
+    res.json({ leaderboard: [], tournament: 'PGA Championship 2026', status: 'Loading...', round: '', fetchedAt: new Date().toISOString() });
   }
 });
 
