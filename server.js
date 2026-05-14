@@ -428,7 +428,7 @@ app.post('/api/pool/pick', async (req, res) => {
 // ═══════════════════════════════════════════════════
 let scoreCache = { data: null, ts: 0 };
 app.get('/api/scores', async (req, res) => {
-  if (scoreCache.data && Date.now() - scoreCache.ts < 60000) return res.json(scoreCache.data);
+  if (scoreCache.data && Date.now() - scoreCache.ts < 600000) // 10 min cache return res.json(scoreCache.data);
   try {
     const data = await fetchESPNScores();
     scoreCache = { data, ts: Date.now() };
@@ -440,33 +440,77 @@ app.get('/api/scores', async (req, res) => {
 });
 
 async function fetchESPNScores() {
-  // Primary: generic current PGA event (always serves the live/current tournament)
-  // Fallback: specific event ID, then leaderboard without event
+  // Try Slash Golf first (real-time) if key is configured
+  if (SLASH_GOLF_KEY) {
+    try {
+      const r = await fetchFn(
+        `https://${SLASH_GOLF_HOST}/leaderboard?orgId=1&tournId=${PGA_TOURN_ID}&year=${PGA_YEAR}`,
+        {
+          headers: {
+            'x-rapidapi-key':  SLASH_GOLF_KEY,
+            'x-rapidapi-host': SLASH_GOLF_HOST,
+            'Content-Type':    'application/json',
+          },
+          signal: AbortSignal.timeout(8000),
+        }
+      );
+      if (r.ok) {
+        const data = await r.json();
+        const normalized = normalizeSlashGolf(data);
+        if (normalized.leaderboard.length > 0) {
+          console.log(`✅ Slash Golf: ${normalized.leaderboard.length} players, round ${normalized.round}`);
+          return normalized;
+        }
+      }
+    } catch(e) { console.warn(`Slash Golf failed: ${e.message}`); }
+  }
+
+  // Fallback: ESPN (delayed but free)
   const urls = [
     `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&event=${PGA_ESPN_ID}`,
     `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga`,
-    `http://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard`,
   ];
   for (const url of urls) {
     try {
-      const r = await fetchFn(url, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }, signal: AbortSignal.timeout(8000) });
-      if (!r.ok) continue;
-      const data = await r.json();
-      // Verify this is actually the PGA Championship, not another event
-      const eventName = data?.events?.[0]?.name || data?.event?.name || '';
-      console.log(`ESPN source: ${url.split('?')[0]} → "${eventName}"`);
-      return normalizeESPN(data);
-    } catch(e) { console.warn(`ESPN URL failed: ${e.message}`); }
+      const r = await fetchFn(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
+      if (r.ok) {
+        console.log('⚠️  Using ESPN fallback (scores may lag)');
+        return normalizeESPN(await r.json());
+      }
+    } catch(e) { console.warn(`ESPN failed: ${e.message}`); }
   }
-  throw new Error('All ESPN URLs failed');
+  throw new Error('All score sources failed');
+}
+
+function normalizeSlashGolf(data) {
+  // Slash Golf leaderboard response structure
+  const players = data?.leaderboard || data?.results?.leaderboard || [];
+  const round   = data?.roundId || data?.results?.roundId || '1';
+  const status  = data?.status  || data?.results?.status  || 'In Progress';
+
+  const leaderboard = players.map(p => {
+    const name   = `${p.firstName || ''} ${p.lastName || ''}`.trim();
+    const toPar  = parseInt(p.totalStrokes || p.toPar || 0, 10) || 0;
+    const thru   = p.thru || p.holesPlayed || '';
+    return { name, toPar, thru, status: p.status || '' };
+  }).sort((a, b) => a.toPar - b.toPar);
+
+  return {
+    tournament: 'PGA Championship 2026',
+    round: `Round ${round}`,
+    status,
+    leaderboard,
+    source: 'slashgolf',
+    fetchedAt: new Date().toISOString(),
+  };
 }
 function normalizeESPN(raw) {
   const event = raw?.events?.[0] || {};
   const comp  = event?.competitions?.[0] || {};
-  const leaderboard = (comp?.competitors || []).map(c => ({
-    name: c?.athlete?.displayName || '', toPar: parseScore(c?.score),
-    thru: c?.status?.thru || '', status: c?.status?.type?.description || '',
-  })).sort((a, b) => a.toPar - b.toPar);
+  const leaderboard = (comp?.competitors || []).map(c => {
+    const disp = c?.score?.displayValue || c?.score || 'E';
+    return { name: c?.athlete?.displayName || '', toPar: parseScore(disp), disp, thru: c?.status?.thru || '', status: c?.status?.type?.description || '' };
+  }).sort((a, b) => a.toPar - b.toPar);
   return { tournament: event?.name || 'PGA Championship', round: comp?.status?.type?.shortDetail || '', status: comp?.status?.type?.description || 'Scheduled', leaderboard, fetchedAt: new Date().toISOString() };
 }
 function parseScore(s) { if (!s || s === 'E') return 0; const n = parseInt(s, 10); return isNaN(n) ? 0 : n; }

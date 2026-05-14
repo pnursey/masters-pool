@@ -233,7 +233,7 @@ select.inp{-webkit-appearance:none;}
   <!-- SCORES -->
   <div id="tc-scores" style="display:none;">
     <div class="score-meta">
-      <div style="font-size:11px;color:var(--dim);"><span class="live-dot"></span>ESPN Golf · Live</div>
+      <div style="font-size:11px;color:var(--dim);"><span class="live-dot"></span>Live Scores · Updates every 10 min</div>
       <button onclick="fetchScores(true)" style="background:none;border:none;color:var(--gold);font-size:11px;cursor:pointer;font-family:Georgia,serif;">↻ Refresh</button>
     </div>
     <div id="score-list"><div style="padding:20px;text-align:center;color:var(--dim);font-size:13px;"><span class="spinner"></span>Loading…</div></div>
@@ -396,8 +396,8 @@ const FIELD = [
   {name:"Kurt Kitayama",cc:"USA",rank:45,odds:"+10000"},
   {name:"Tom Hoge",cc:"USA",rank:46,odds:"+8000"},
   {name:"Daniel Berger",cc:"USA",rank:47,odds:"+10000"},
-  {name:"Nicolai Hojgaard",cc:"DEN",rank:48,odds:"+10000"},
-  {name:"Rasmus Hojgaard",cc:"DEN",rank:49,odds:"+12000"},
+  {name:"Nicolai Højgaard",cc:"DEN",rank:48,odds:"+10000"},
+  {name:"Rasmus Højgaard",cc:"DEN",rank:49,odds:"+12000"},
   {name:"Min Woo Lee",cc:"AUS",rank:50,odds:"+12000"},
   {name:"Christiaan Bezuidenhout",cc:"RSA",rank:51,odds:"+12000"},
   {name:"Ben Griffin",cc:"USA",rank:52,odds:"+12000"},
@@ -768,7 +768,7 @@ function renderPoolScoreboard(){
 }
 function buildTeams(){ return(pool.managers||[]).map((mgr,idx)=>{ const picks=(pool.picks||[]).filter(p=>p.managerIdx===idx); const golfers=picks.map(p=>({name:p.golfer,sc:getPS(p.golfer)})).sort((a,b)=>(a.sc?.toPar??0)-(b.sc?.toPar??0)); const top=Math.min(4,golfers.length); const total=golfers.slice(0,top).reduce((s,g)=>s+(g.sc?.toPar??0),0); return{mgrName:gName(mgr),email:gEmail(mgr),golfers,total}; }); }
 function fmtScore(s){return s===0?'E':s>0?'+'+s:''+s;}
-setInterval(()=>{const el=document.getElementById('tc-scores');if(el&&el.style.display!=='none')fetchScores();},60000);
+setInterval(()=>{const el=document.getElementById('tc-scores');if(el&&el.style.display!=='none')fetchScores();},600000); // 10 min
 
 // TEAMS
 function renderTeams(){ const el=document.getElementById('teams-content');if(!el)return; const picks=pool.picks||[]; if(!picks.length){el.innerHTML='<div style="padding:24px 16px;text-align:center;color:var(--dim);">Teams appear after the draft.</div>';return;} const rounds={}; picks.forEach(p=>{(rounds[p.round]=rounds[p.round]||[]).push(p);}); let html='<div style="padding:10px 11px 4px;font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;">Pick History</div>'; Object.keys(rounds).sort((a,b)=>a-b).forEach(r=>{ html+=`<div class="r-lbl">Round ${r}</div>`; rounds[r].forEach(p=>{html+=`<div class="p-row"><span class="pr-n">#${p.pick}</span><span class="pr-m">${gName(pool.managers[p.managerIdx])||'?'}${p.autoPick?'<span class="b-auto">auto</span>':''}</span><span class="pr-g">${p.golfer}</span></div>`;}); }); el.innerHTML=html; }
