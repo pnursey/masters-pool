@@ -718,17 +718,22 @@ async function fetchScores(force){
   }catch{renderPoolScoreboard();}
 }
 function norm(n){
-  // Normalize name: lowercase, remove accents/special chars, fix common abbreviations
+  // Normalize name for matching — handles accents, special chars, ESPN variations
   let s=n.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // remove accents (Åberg→aberg)
+    // Explicit replacements for chars NFD won't catch
+    .replace(/ø/g,'o').replace(/ö/g,'o').replace(/ó/g,'o').replace(/ò/g,'o')
+    .replace(/å/g,'a').replace(/ä/g,'a').replace(/á/g,'a').replace(/à/g,'a')
+    .replace(/ü/g,'u').replace(/ú/g,'u').replace(/ñ/g,'n')
+    .replace(/æ/g,'ae').replace(/ß/g,'ss')
+    // Standard NFD normalization for remaining accents
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z ]/g,'')
     .replace(/\s+/g,' ').trim();
-  // Handle common ESPN name variations
+  // ESPN name abbreviations
   s=s.replace(/^matthew /,'matt ')
      .replace(/^christopher /,'chris ')
      .replace(/^robert /,'rob ')
-     .replace(/^thomas /,'tom ')
-     .replace(/^nicolai /,'nicolai ');
+     .replace(/^thomas /,'tom ');
   return s;
 }
 function getPS(name){

@@ -18,7 +18,7 @@ const app     = express();
 const PORT             = process.env.PORT || 3000;
 const COMMISH_PASSWORD = process.env.COMMISH_PASSWORD || 'commish2026';
 const POOL_PASSWORD    = process.env.POOL_PASSWORD    || 'pga2026';
-const PGA_ESPN_ID      = '401580359'; // 2026 PGA Championship ESPN event ID
+const PGA_ESPN_ID      = '401811947'; // 2026 PGA Championship at Aronimink - confirmed // 2026 PGA Championship ESPN event ID
 
 let fetchFn;
 try { fetchFn = require('node-fetch'); if (fetchFn.default) fetchFn = fetchFn.default; }
@@ -443,9 +443,9 @@ async function fetchESPNScores() {
   // Primary: generic current PGA event (always serves the live/current tournament)
   // Fallback: specific event ID, then leaderboard without event
   const urls = [
-    `http://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard`,
     `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&event=${PGA_ESPN_ID}`,
     `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga`,
+    `http://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard`,
   ];
   for (const url of urls) {
     try {
