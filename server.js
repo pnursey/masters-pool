@@ -440,17 +440,25 @@ app.get('/api/scores', async (req, res) => {
 });
 
 async function fetchESPNScores() {
+  // Primary: generic current PGA event (always serves the live/current tournament)
+  // Fallback: specific event ID, then leaderboard without event
   const urls = [
+    `http://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard`,
     `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&event=${PGA_ESPN_ID}`,
     `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga`,
   ];
   for (const url of urls) {
     try {
-      const r = await fetchFn(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-      if (r.ok) return normalizeESPN(await r.json());
-    } catch {}
+      const r = await fetchFn(url, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }, signal: AbortSignal.timeout(8000) });
+      if (!r.ok) continue;
+      const data = await r.json();
+      // Verify this is actually the PGA Championship, not another event
+      const eventName = data?.events?.[0]?.name || data?.event?.name || '';
+      console.log(`ESPN source: ${url.split('?')[0]} → "${eventName}"`);
+      return normalizeESPN(data);
+    } catch(e) { console.warn(`ESPN URL failed: ${e.message}`); }
   }
-  throw new Error('ESPN unavailable');
+  throw new Error('All ESPN URLs failed');
 }
 function normalizeESPN(raw) {
   const event = raw?.events?.[0] || {};
