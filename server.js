@@ -495,6 +495,12 @@ async function fetchESPNScores() {
   throw new Error('All score sources failed');
 }
 
+function extractVal(v) {
+  if (v === null || v === undefined) return null;
+  if (typeof v === 'object') return v.$numberInt || v.$numberDouble || v.value || null;
+  return v;
+}
+
 function normalizeSlashGolf(data) {
   // Slash Golf actual response structure (confirmed from live data):
   // { orgId, year, tournId, status, roundId, leaderboardRows: [...] }
@@ -508,8 +514,8 @@ function normalizeSlashGolf(data) {
   const leaderboard = players.map(p => {
     const name  = `${p.firstName || ''} ${p.lastName || ''}`.trim();
     // "total" field is like "-4", "E", "+2"
-    const toPar = parseScore(p.total || 'E');
-    const thru  = p.currentHole ? String(p.currentHole) : '';
+    const totalRaw = typeof p.total === 'object' ? (p.total.$numberInt || p.total.value || 'E') : (p.total || 'E'); const toPar = parseScore(String(totalRaw));
+    const holeRaw = extractVal(p.currentHole); const thru = holeRaw !== null ? String(holeRaw) : '';
     const pStatus = p.status || '';
     return { name, toPar, thru, status: pStatus };
   }).sort((a, b) => a.toPar - b.toPar);
