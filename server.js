@@ -517,7 +517,9 @@ function normalizeSlashGolf(data) {
     const totalRaw = typeof p.total === 'object' ? (p.total.$numberInt || p.total.value || 'E') : (p.total || 'E'); const toPar = parseScore(String(totalRaw));
     const holeRaw = extractVal(p.currentHole); const thru = holeRaw !== null ? String(holeRaw) : '';
     const pStatus = p.status || '';
-    return { name, toPar, thru, status: pStatus };
+    // Slash Golf status values: 'active', 'cut', 'wd', 'dq'
+    const isCut = ['cut','wd','dq','withdrawn'].includes(pStatus.toLowerCase());
+    return { name, toPar, thru, status: pStatus, cut: isCut };
   }).sort((a, b) => a.toPar - b.toPar);
 
   console.log(`Slash Golf parsed: ${leaderboard.length} players, leader: ${leaderboard[0]?.name} ${leaderboard[0]?.toPar}`);

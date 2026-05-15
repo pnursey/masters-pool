@@ -714,7 +714,7 @@ async function submitPick(golfer){
 async function fetchScores(force){
   if(!force&&Date.now()-lastScoreFetch<60000&&Object.keys(liveScores).length>0){renderPoolScoreboard();return;}
   try{ const r=await fetch('/api/scores'); if(!r.ok) throw new Error(); const d=await r.json();
-    liveScores={}; (d.leaderboard||[]).forEach(p=>{liveScores[norm(p.name)]={toPar:p.toPar,thru:p.thru,status:p.status,state:p.state};}); lastScoreFetch=Date.now(); renderPoolScoreboard();
+    liveScores={}; (d.leaderboard||[]).forEach(p=>{ const isCut=p.status&&(p.status.toLowerCase().includes('cut')||p.status.toLowerCase().includes('wd')||p.status.toLowerCase().includes('withdraw')); liveScores[norm(p.name)]={toPar:p.toPar,thru:p.thru,status:p.status,state:p.state,cut:isCut}; }); lastScoreFetch=Date.now(); renderPoolScoreboard();
   }catch{renderPoolScoreboard();}
 }
 function norm(n){
@@ -760,13 +760,34 @@ function renderPoolScoreboard(){
   const teams=buildTeams().sort((a,b)=>a.total-b.total);
   el.innerHTML=teams.map((t,i)=>{
     const pos=i===0?'🥇 1st':i===1?'🥈 2nd':i===2?'🥉 3rd':`${i+1}th`;
-    const rows=t.golfers.map((g,gi)=>{ const dropped=gi>=4,sc=g.sc,par=sc?sc.toPar:0; const cls='gr-sc '+(dropped?'even':par<0?'under':par>0?'over':'even'); const notStarted=!sc?.thru||sc?.thru==='0'; const thru=sc?(notStarted&&sc?.toPar===0?'—':(sc.thru==='18'?'F':sc.thru||'')):'—';
-      return `<div class="g-row${dropped?' gr-dropped':''}"><span class="gr-name">${g.name}</span><span class="${cls}">${fmtScore(par)}</span><span class="gr-note">${dropped?'dropped':''}</span></div>`; }).join('');
+    const rows=t.golfers.map((g,gi)=>{
+      const dropped=gi>=4;
+      const isCut=g.isCut||false;
+      const par=g.toPar??0;
+      const cls='gr-sc '+(dropped?'even':isCut?'over':par<0?'under':par>0?'over':'even');
+      const cutBadge=isCut?'<span style="font-size:9px;background:rgba(180,60,60,.25);color:#f08080;padding:1px 6px;border-radius:3px;margin-left:5px;letter-spacing:1px;">CUT +20</span>':'';
+      return `<div class="g-row${dropped?' gr-dropped':''}"><span class="gr-name">${g.name}${cutBadge}</span><span class="${cls}">${fmtScore(par)}</span><span class="gr-note">${dropped?'dropped':''}</span></div>`;
+    }).join('');
     const isMe=t.email===S.email||t.mgrName===S.name;
     return `<div class="team-card"><div class="team-hdr"><div><div class="t-name">${t.mgrName}${isMe?'<span class="badge b-green">You</span>':''}</div><div class="t-pos">${pos}</div></div><div class="t-score">${fmtScore(t.total)}</div></div>${rows}</div>`;
   }).join('');
 }
-function buildTeams(){ return(pool.managers||[]).map((mgr,idx)=>{ const picks=(pool.picks||[]).filter(p=>p.managerIdx===idx); const golfers=picks.map(p=>({name:p.golfer,sc:getPS(p.golfer)})).sort((a,b)=>(a.sc?.toPar??0)-(b.sc?.toPar??0)); const top=Math.min(4,golfers.length); const total=golfers.slice(0,top).reduce((s,g)=>s+(g.sc?.toPar??0),0); return{mgrName:gName(mgr),email:gEmail(mgr),golfers,total}; }); }
+function buildTeams(){
+  return(pool.managers||[]).map((mgr,idx)=>{
+    const picks=(pool.picks||[]).filter(p=>p.managerIdx===idx);
+    const golfers=picks.map(p=>{
+      const sc=getPS(p.golfer);
+      // Apply +20 penalty for cut/WD players (+10 per each remaining round)
+      const isCut=sc?.cut||false;
+      const basePar=sc?.toPar??0;
+      const toPar=isCut?basePar+20:basePar;
+      return{name:p.golfer,sc,toPar,isCut};
+    }).sort((a,b)=>a.toPar-b.toPar);
+    const top=Math.min(4,golfers.length);
+    const total=golfers.slice(0,top).reduce((s,g)=>s+g.toPar,0);
+    return{mgrName:gName(mgr),email:gEmail(mgr),golfers,total};
+  });
+}
 function fmtScore(s){return s===0?'E':s>0?'+'+s:''+s;}
 setInterval(()=>{const el=document.getElementById('tc-scores');if(el&&el.style.display!=='none')fetchScores();},600000); // 10 min
 
