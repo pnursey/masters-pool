@@ -1,17 +1,13 @@
 {
   "name": "golf-pool-2026",
-  "version": "3.0.0",
-  "description": "Golf Pool — PGA Championship 2026 · Snake Draft + Live Scoreboard",
+  "version": "5.0.0",
+  "description": "Golf Pool — The Open Championship 2026",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
+  "scripts": { "start": "node server.js" },
   "dependencies": {
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
     "@libsql/client": "^0.14.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "engines": { "node": ">=18.0.0" }
 }

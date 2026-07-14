@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>PGA Championship Pool 2026</title>
+<title>The Open Pool 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Georgia',serif;background:#152a15;color:#f0ead6;min-height:100vh;}
@@ -69,6 +69,7 @@ select.inp{-webkit-appearance:none;}
 .g-odds{font-size:11px;color:var(--gold);background:rgba(201,168,76,.1);padding:2px 7px;border-radius:4px;}
 .pick-tag{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#0d200d;background:var(--gold);padding:2px 6px;border-radius:3px;}
 .g-drafter{font-size:10px;color:var(--dim);position:absolute;right:11px;}
+.am-tag{font-size:9px;color:#90b0ff;background:rgba(80,120,220,.15);padding:1px 5px;border-radius:3px;margin-left:4px;}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:flex-end;justify-content:center;}
 .modal-bg.open{display:flex;}
 .modal-sheet{background:#1c3c1c;border-top:2px solid var(--gold);border-radius:16px 16px 0 0;padding:20px 20px 30px;width:100%;max-width:500px;}
@@ -84,7 +85,6 @@ select.inp{-webkit-appearance:none;}
 .t-score{font-size:22px;color:var(--gold);font-weight:bold;}
 .g-row{display:flex;align-items:center;padding:8px 13px;border-top:1px solid rgba(201,168,76,.1);}
 .gr-name{flex:1;font-size:13px;color:var(--cream);}
-.gr-thru{font-size:11px;color:var(--dim);margin-right:8px;}
 .gr-sc{font-size:12px;padding:2px 8px;border-radius:4px;min-width:34px;text-align:center;}
 .gr-sc.under{background:rgba(50,130,50,.3);color:#7fdf7f;}
 .gr-sc.over{background:rgba(150,50,50,.3);color:#ff8080;}
@@ -101,11 +101,6 @@ select.inp{-webkit-appearance:none;}
 .r-lbl{font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;padding:10px 2px 5px;margin:0 11px;}
 .p-row{display:flex;align-items:center;padding:8px 13px;background:var(--card);border:1px solid var(--border);border-radius:7px;margin:0 11px 5px;}
 .pr-n{font-size:11px;color:var(--gold);width:26px;}.pr-m{flex:1;font-size:13px;color:var(--cream);}.pr-g{font-size:13px;color:var(--dim);text-align:right;}
-/* Manual pick entry */
-.pick-entry-row{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
-.pick-entry-row .pick-num{font-size:11px;color:var(--gold);width:24px;flex-shrink:0;}
-.pick-entry-row select{flex:1;padding:7px 10px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:7px;color:var(--cream);font-size:13px;font-family:Georgia,serif;outline:none;-webkit-appearance:none;}
-.pick-entry-row select:focus{border-color:var(--gold);}
 .divider{height:1px;background:var(--border);margin:13px 0;}
 .muted{color:var(--dim);font-size:13px;}
 .tc{text-align:center;}.mt12{margin-top:12px;}.mt8{margin-top:8px;}.mb8{margin-bottom:8px;}.pb80{padding-bottom:80px;}
@@ -119,8 +114,6 @@ select.inp{-webkit-appearance:none;}
 .lb-link{display:block;text-align:center;font-size:11px;color:var(--dim);padding:6px;}
 .lb-link a{color:var(--gold);text-decoration:none;}
 .hint{font-size:11px;color:var(--dim);margin-top:5px;line-height:1.5;}
-.db-status{font-size:11px;padding:6px 11px;text-align:center;color:var(--dim);}
-.db-ok{color:#90df90;}.db-warn{color:#f0a84c;}
 </style>
 </head>
 <body>
@@ -129,8 +122,8 @@ select.inp{-webkit-appearance:none;}
 <div id="s-login" class="screen active">
   <div class="logo-area">
     <div class="logo-icon">🏆</div>
-    <div class="logo-name">GOLF POOL 2026</div>
-    <div class="logo-sub">PGA Championship · Aronimink GC · May 14–17</div>
+    <div class="logo-name">THE OPEN POOL 2026</div>
+    <div class="logo-sub">Royal Birkdale · Southport, England · July 16–19</div>
   </div>
   <div class="card" id="player-card">
     <div class="auth-toggle">
@@ -146,9 +139,9 @@ select.inp{-webkit-appearance:none;}
     <div id="form-register" style="display:none;">
       <div class="fg"><label class="lbl">Your Name</label><input class="inp" id="reg-name" type="text" placeholder="e.g. John Smith" autocomplete="name"></div>
       <div class="fg"><label class="lbl">Email</label><input class="inp" id="reg-email" type="email" placeholder="you@email.com" autocomplete="email"></div>
-      <div class="fg"><label class="lbl">Pool Password</label><input class="inp" id="reg-pool-pass" type="password" placeholder="Ask your commissioner for this">
-        <div class="hint">Shared password your commissioner gave you. Default: pga2026</div></div>
-      <div class="fg"><label class="lbl">Your Personal Password</label><input class="inp" id="reg-pass" type="password" placeholder="Pick something memorable (min 4 chars)" autocomplete="new-password"></div>
+      <div class="fg"><label class="lbl">Pool Password</label><input class="inp" id="reg-pool-pass" type="password" placeholder="Ask your commissioner">
+        <div class="hint">Default pool password: open2026</div></div>
+      <div class="fg"><label class="lbl">Your Personal Password</label><input class="inp" id="reg-pass" type="password" placeholder="Min 4 characters" autocomplete="new-password"></div>
       <div class="msg err" id="reg-err"></div>
       <button class="btn btn-gold" onclick="doRegister()">Create Account & Join Pool</button>
     </div>
@@ -170,7 +163,7 @@ select.inp{-webkit-appearance:none;}
 
 <!-- MAIN APP -->
 <div id="s-main" class="screen">
-  <div class="hdr"><small id="main-pool-name">Golf Pool 2026</small><h1 id="main-venue">PGA Championship · May 14–17</h1></div>
+  <div class="hdr"><small id="main-pool-name">The Open Pool 2026</small><h1 id="main-venue">Royal Birkdale · July 16–19, 2026</h1></div>
   <div class="tabs">
     <button class="tab on" id="tb-lobby"  onclick="showTab('lobby')">Lobby</button>
     <button class="tab"    id="tb-draft"  onclick="showTab('draft')">Draft</button>
@@ -198,8 +191,9 @@ select.inp{-webkit-appearance:none;}
         <div>• Snake draft · <span id="rules-picks">5</span> picks per manager</div>
         <div>• <span id="rules-secs">90</span> seconds per pick · auto-pick if timer expires</div>
         <div>• Best <b style="color:var(--cream);">4 of 5</b> scores to par count</div>
+        <div>• Missed cut = +20 penalty added to score</div>
         <div>• Lowest combined score to par wins</div>
-        <div>• Live scoring via ESPN · May 14–17</div>
+        <div>• Live scoring · July 16–19</div>
       </div>
     </div>
     <div class="tc pb80" style="padding-top:4px;">
@@ -225,7 +219,7 @@ select.inp{-webkit-appearance:none;}
     <div id="d-done" style="display:none;padding:28px 16px;text-align:center;">
       <div style="font-size:44px;margin-bottom:10px;">🏆</div>
       <div style="font-size:20px;color:var(--gold);">Draft Complete!</div>
-      <div class="muted mt8">PGA Championship begins Thursday, May 14.</div>
+      <div class="muted mt8">The Open Championship begins Thursday, July 16.</div>
       <button class="btn btn-gold mt12" style="max-width:220px;margin:14px auto 0;" onclick="showTab('teams')">View All Teams</button>
     </div>
   </div>
@@ -239,7 +233,7 @@ select.inp{-webkit-appearance:none;}
     <div id="score-list"><div style="padding:20px;text-align:center;color:var(--dim);font-size:13px;"><span class="spinner"></span>Loading…</div></div>
     <div class="lb-link">
       <a href="https://www.espn.com/golf/leaderboard" target="_blank">ESPN Golf ↗</a> &nbsp;·&nbsp;
-      <a href="https://www.pgachampionship.com/" target="_blank">PGAChampionship.com ↗</a>
+      <a href="https://www.theopen.com/" target="_blank">TheOpen.com ↗</a>
     </div>
   </div>
 
@@ -248,11 +242,6 @@ select.inp{-webkit-appearance:none;}
 
   <!-- ADMIN -->
   <div id="tc-admin" style="display:none;padding-bottom:80px;">
-
-    <!-- DB Status -->
-    <div class="db-status" id="db-status"></div>
-
-    <!-- Settings -->
     <div class="commish-section mt12">
       <div class="commish-title">⚙ Pool Settings</div>
       <div class="fg"><label class="lbl">Pool Name</label><input class="inp" id="a-pool-name"></div>
@@ -271,8 +260,6 @@ select.inp{-webkit-appearance:none;}
       <div class="msg ok"  id="a-settings-ok">Settings saved!</div>
       <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
     </div>
-
-    <!-- Managers -->
     <div class="commish-section">
       <div class="commish-title">👥 Manage Draft Order</div>
       <div id="a-mgr-list"></div>
@@ -284,30 +271,17 @@ select.inp{-webkit-appearance:none;}
       </div>
       <p class="muted mt8" style="font-size:11px;">Players appear here when they create an account. Use ▲▼ to reorder, × to remove.</p>
     </div>
-
-    <!-- MANUAL PICK ENTRY — key new feature -->
     <div class="commish-section">
       <div class="commish-title">✏️ Manual Pick Entry</div>
-      <div class="muted mb8" style="font-size:12px;">Use this to enter picks manually — for recovery or if someone's connection fails. Select the pick number, manager, and golfer.</div>
-      <div class="fg">
-        <label class="lbl">Pick Number</label>
-        <select class="inp" id="mp-pick-num" onchange="updateManualPick()"></select>
-      </div>
-      <div class="fg">
-        <label class="lbl">Manager</label>
-        <select class="inp" id="mp-manager"></select>
-      </div>
-      <div class="fg">
-        <label class="lbl">Golfer</label>
-        <select class="inp" id="mp-golfer"></select>
-      </div>
+      <div class="muted mb8" style="font-size:12px;">Use to enter or correct any pick.</div>
+      <div class="fg"><label class="lbl">Pick Number</label><select class="inp" id="mp-pick-num" onchange="updateManualPick()"></select></div>
+      <div class="fg"><label class="lbl">Manager</label><select class="inp" id="mp-manager"></select></div>
+      <div class="fg"><label class="lbl">Golfer</label><select class="inp" id="mp-golfer"></select></div>
       <div class="msg err" id="mp-err"></div>
       <div class="msg ok"  id="mp-ok"></div>
       <button class="btn btn-gold mb8" onclick="submitManualPick()">Save This Pick</button>
-      <button class="btn btn-outline btn-sm" onclick="markDraftComplete()" style="margin-top:4px;">Mark Draft as Complete</button>
+      <button class="btn btn-outline btn-sm" onclick="markDraftComplete()">Mark Draft as Complete</button>
     </div>
-
-    <!-- Draft Controls -->
     <div class="commish-section">
       <div class="commish-title">🏌️ Draft Controls</div>
       <div class="muted mb8" style="font-size:12px;" id="a-draft-status">Draft not started.</div>
@@ -316,8 +290,6 @@ select.inp{-webkit-appearance:none;}
       <div class="msg err mt8" id="a-draft-err"></div>
       <div class="msg ok  mt8" id="a-draft-ok"></div>
     </div>
-
-    <!-- Password Reset -->
     <div class="commish-section">
       <div class="commish-title">🔑 Reset a Player's Password</div>
       <div class="fg"><label class="lbl">Player Email</label><input class="inp" id="a-reset-email" placeholder="player@email.com"></div>
@@ -326,7 +298,6 @@ select.inp{-webkit-appearance:none;}
       <div class="msg ok"  id="a-reset-ok"></div>
       <button class="btn btn-outline" onclick="resetPlayerPassword()">Reset Password</button>
     </div>
-
     <div style="padding:0 11px 20px;">
       <button class="btn btn-outline" onclick="logout()" style="opacity:.6;">Log Out</button>
     </div>
@@ -344,184 +315,178 @@ select.inp{-webkit-appearance:none;}
 </div>
 
 <script>
-// ═══════════════════════════════════════
-// 2026 PGA CHAMPIONSHIP FIELD
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// 2026 OPEN CHAMPIONSHIP FIELD — Royal Birkdale
+// July 16–19 · Southport, England
+// Odds via DraftKings as of July 14, 2026
+// Source: https://dknetwork.draftkings.com/2026/07/12/2026-the-open-championship-odds-full-field/
+// ═══════════════════════════════════════════════════
 const FIELD = [
-  // ── Top contenders ──
-  {name:"Scottie Scheffler",cc:"USA",rank:1,odds:"+350"},
-  {name:"Rory McIlroy",cc:"NIR",rank:2,odds:"+500"},
-  {name:"Cameron Young",cc:"USA",rank:3,odds:"+800"},
-  {name:"Matt Fitzpatrick",cc:"ENG",rank:4,odds:"+1000"},
-  {name:"Xander Schauffele",cc:"USA",rank:5,odds:"+1100"},
-  {name:"Collin Morikawa",cc:"USA",rank:6,odds:"+1200"},
-  {name:"Ludvig Åberg",cc:"SWE",rank:7,odds:"+1400"},
-  {name:"Rickie Fowler",cc:"USA",rank:8,odds:"+1600"},
-  {name:"Patrick Reed",cc:"USA",rank:9,odds:"+1800"},
-  {name:"Adam Scott",cc:"AUS",rank:10,odds:"+2000"},
-  {name:"Tommy Fleetwood",cc:"ENG",rank:11,odds:"+2000"},
-  {name:"Bryson DeChambeau",cc:"USA",rank:12,odds:"+2000"},
-  {name:"Viktor Hovland",cc:"NOR",rank:13,odds:"+2200"},
-  {name:"Justin Thomas",cc:"USA",rank:14,odds:"+2500"},
-  {name:"Brooks Koepka",cc:"USA",rank:15,odds:"+2500"},
-  {name:"Patrick Cantlay",cc:"USA",rank:16,odds:"+2800"},
-  {name:"Jon Rahm",cc:"ESP",rank:17,odds:"+3000"},
-  {name:"Jordan Spieth",cc:"USA",rank:18,odds:"+3000"},
-  {name:"Hideki Matsuyama",cc:"JPN",rank:19,odds:"+3200"},
-  {name:"Robert MacIntyre",cc:"SCO",rank:20,odds:"+3500"},
-  {name:"J.T. Poston",cc:"USA",rank:21,odds:"+4000"},
-  {name:"Max Homa",cc:"USA",rank:22,odds:"+4000"},
-  {name:"Shane Lowry",cc:"IRL",rank:23,odds:"+4000"},
-  {name:"Justin Rose",cc:"ENG",rank:24,odds:"+4500"},
-  {name:"Harris English",cc:"USA",rank:25,odds:"+5000"},
-  {name:"Sahith Theegala",cc:"USA",rank:26,odds:"+5000"},
-  {name:"Brian Harman",cc:"USA",rank:27,odds:"+5000"},
-  {name:"Tyrrell Hatton",cc:"ENG",rank:28,odds:"+5500"},
-  {name:"Sepp Straka",cc:"AUT",rank:29,odds:"+6000"},
-  {name:"Sungjae Im",cc:"KOR",rank:30,odds:"+6000"},
-  {name:"Wyndham Clark",cc:"USA",rank:31,odds:"+6000"},
-  {name:"Chris Gotterup",cc:"USA",rank:32,odds:"+6500"},
-  {name:"Corey Conners",cc:"CAN",rank:33,odds:"+7000"},
-  {name:"Russell Henley",cc:"USA",rank:34,odds:"+7000"},
-  {name:"Keegan Bradley",cc:"USA",rank:35,odds:"+7500"},
-  {name:"Akshay Bhatia",cc:"USA",rank:36,odds:"+8000"},
-  {name:"Si Woo Kim",cc:"KOR",rank:37,odds:"+8000"},
-  {name:"Jacob Bridgeman",cc:"USA",rank:38,odds:"+8000"},
-  {name:"Maverick McNealy",cc:"USA",rank:39,odds:"+9000"},
-  {name:"Sam Burns",cc:"USA",rank:40,odds:"+9000"},
-  {name:"Jason Day",cc:"AUS",rank:41,odds:"+9000"},
-  {name:"Aaron Rai",cc:"ENG",rank:42,odds:"+9000"},
-  {name:"Cameron Smith",cc:"AUS",rank:43,odds:"+9000"},
-  {name:"Joaquin Niemann",cc:"CHI",rank:44,odds:"+10000"},
-  {name:"Kurt Kitayama",cc:"USA",rank:45,odds:"+10000"},
-  {name:"Tom Hoge",cc:"USA",rank:46,odds:"+8000"},
-  {name:"Daniel Berger",cc:"USA",rank:47,odds:"+10000"},
-  {name:"Nicolai Højgaard",cc:"DEN",rank:48,odds:"+10000"},
-  {name:"Rasmus Højgaard",cc:"DEN",rank:49,odds:"+12000"},
-  {name:"Min Woo Lee",cc:"AUS",rank:50,odds:"+12000"},
-  {name:"Christiaan Bezuidenhout",cc:"RSA",rank:51,odds:"+12000"},
-  {name:"Ben Griffin",cc:"USA",rank:52,odds:"+12000"},
-  {name:"Kristoffer Reitan",cc:"NOR",rank:53,odds:"+14000"},
-  {name:"Davis Riley",cc:"USA",rank:54,odds:"+15000"},
-  {name:"Nick Taylor",cc:"CAN",rank:55,odds:"+15000"},
-  {name:"Ryan Fox",cc:"NZL",rank:56,odds:"+15000"},
-  {name:"Tom Kim",cc:"KOR",rank:57,odds:"+15000"},
-  {name:"Matt McCarty",cc:"USA",rank:58,odds:"+16000"},
-  {name:"Aldrich Potgieter",cc:"RSA",rank:59,odds:"+16000"},
-  {name:"Andrew Novak",cc:"USA",rank:60,odds:"+18000"},
-  {name:"Michael Brennan",cc:"USA",rank:61,odds:"+18000"},
-  {name:"Samuel Stevens",cc:"CAN",rank:62,odds:"+18000"},
-  {name:"Nicolas Echavarria",cc:"COL",rank:63,odds:"+20000"},
-  {name:"Haotong Li",cc:"CHN",rank:64,odds:"+20000"},
-  {name:"Brian Campbell",cc:"USA",rank:65,odds:"+20000"},
-  {name:"Tom McKibbin",cc:"NIR",rank:66,odds:"+20000"},
-  {name:"Max Greyserman",cc:"USA",rank:67,odds:"+20000"},
-  {name:"Alex Noren",cc:"SWE",rank:68,odds:"+22000"},
-  {name:"Harry Hall",cc:"ENG",rank:69,odds:"+25000"},
-  {name:"J.J. Spaun",cc:"USA",rank:70,odds:"+25000"},
-  {name:"Ryan Gerard",cc:"USA",rank:71,odds:"+28000"},
-  {name:"Michael Kim",cc:"USA",rank:72,odds:"+30000"},
-  {name:"Sami Välimäki",cc:"FIN",rank:73,odds:"+30000"},
-  {name:"Casey Jarvis",cc:"RSA",rank:74,odds:"+35000"},
-  {name:"Ricky Castillo",cc:"USA",rank:75,odds:"+35000"},
-  {name:"Alex Fitzpatrick",cc:"ENG",rank:76,odds:"+35000"},
-  {name:"Daniel Brown",cc:"ENG",rank:77,odds:"+40000"},
-  {name:"Emiliano Grillo",cc:"ARG",rank:78,odds:"+40000"},
-  {name:"Rasmus Neergaard-Petersen",cc:"DEN",rank:79,odds:"+40000"},
-  {name:"Marco Penge",cc:"ENG",rank:80,odds:"+40000"},
-  {name:"Taylor Pendrith",cc:"CAN",rank:81,odds:"+40000"},
-  {name:"Stephan Jaeger",cc:"GER",rank:82,odds:"+40000"},
-  {name:"Billy Horschel",cc:"USA",rank:83,odds:"+40000"},
-  {name:"Lucas Glover",cc:"USA",rank:84,odds:"+40000"},
-  {name:"Denny McCarthy",cc:"USA",rank:85,odds:"+40000"},
-  {name:"Patrick Rodgers",cc:"USA",rank:86,odds:"+40000"},
-  {name:"Keith Mitchell",cc:"USA",rank:87,odds:"+45000"},
-  {name:"Alex Smalley",cc:"USA",rank:88,odds:"+45000"},
-  {name:"Ryo Hisatsune",cc:"JPN",rank:89,odds:"+45000"},
-  {name:"Garrick Higgo",cc:"RSA",rank:90,odds:"+45000"},
-  {name:"Joe Highsmith",cc:"USA",rank:91,odds:"+50000"},
-  {name:"Andy Sullivan",cc:"ENG",rank:92,odds:"+50000"},
-  {name:"Matt Wallace",cc:"ENG",rank:93,odds:"+50000"},
-  {name:"Adrien Saddier",cc:"FRA",rank:94,odds:"+50000"},
-  {name:"Jordan Smith",cc:"ENG",rank:95,odds:"+50000"},
-  {name:"John Parry",cc:"ENG",rank:96,odds:"+50000"},
-  {name:"Jayden Schaper",cc:"RSA",rank:97,odds:"+50000"},
-  {name:"Pádraig Harrington",cc:"IRL",rank:98,odds:"+50000"},
-  {name:"Jhonattan Vegas",cc:"VEN",rank:99,odds:"+50000"},
-  {name:"Rico Hoey",cc:"PHI",rank:100,odds:"+50000"},
-  {name:"Matti Schmid",cc:"GER",rank:101,odds:"+50000"},
-  {name:"Austin Smotherman",cc:"USA",rank:102,odds:"+50000"},
-  {name:"Travis Smyth",cc:"AUS",rank:103,odds:"+60000"},
-  {name:"Kazuki Higa",cc:"JPN",rank:104,odds:"+60000"},
-  {name:"Kota Kaneko",cc:"JPN",rank:105,odds:"+60000"},
-  {name:"Mikael Lindberg",cc:"SWE",rank:106,odds:"+60000"},
-  {name:"Daniel Hillier",cc:"NZL",rank:107,odds:"+60000"},
-  {name:"Max McGreevy",cc:"USA",rank:108,odds:"+60000"},
-  {name:"Adam Schenk",cc:"USA",rank:109,odds:"+60000"},
-  {name:"David Lipsky",cc:"USA",rank:110,odds:"+60000"},
-  {name:"Chris Kirk",cc:"USA",rank:111,odds:"+60000"},
-  {name:"Andrew Putnam",cc:"USA",rank:112,odds:"+60000"},
-  {name:"Steven Fisk",cc:"USA",rank:113,odds:"+75000"},
-  {name:"Martin Kaymer",cc:"GER",rank:114,odds:"+75000"},
-  {name:"Thomas Detry",cc:"BEL",rank:115,odds:"+75000"},
-  {name:"David Puig",cc:"ESP",rank:116,odds:"+75000"},
-  {name:"Elvis Smylie",cc:"AUS",rank:117,odds:"+75000"},
-  // ── Past Champions / Veterans ──
-  {name:"Dustin Johnson",cc:"USA",rank:119,odds:"+50000"},
-  {name:"Y.E. Yang",cc:"KOR",rank:120,odds:"+99000"},
-  {name:"Shaun Micheel",cc:"USA",rank:121,odds:"+99000"},
-  {name:"Jimmy Walker",cc:"USA",rank:122,odds:"+99000"},
-  {name:"Stewart Cink",cc:"USA",rank:123,odds:"+99000"},
-  {name:"Jason Dufner",cc:"USA",rank:124,odds:"+99000"},
-  {name:"Luke Donald",cc:"ENG",rank:125,odds:"+99000"},
-  {name:"Bernd Wiesberger",cc:"AUT",rank:126,odds:"+99000"},
-  {name:"Bud Cauley",cc:"USA",rank:127,odds:"+99000"},
-  {name:"Pierceson Coody",cc:"USA",rank:128,odds:"+99000"},
-  {name:"Jordan Gumberg",cc:"USA",rank:129,odds:"+99000"},
-  {name:"William Mouw",cc:"USA",rank:130,odds:"+99000"},
-  // ── PGA Professionals (* = club pro) ──
-  {name:"Derek Berg",cc:"USA",rank:131,odds:"+99000",pro:true},
-  {name:"Francisco Bide",cc:"ARG",rank:132,odds:"+99000",pro:true},
-  {name:"Chandler Blanchet",cc:"USA",rank:133,odds:"+99000",pro:true},
-  {name:"Michael Block",cc:"USA",rank:134,odds:"+99000",pro:true},
-  {name:"Tyler Collet",cc:"USA",rank:135,odds:"+99000",pro:true},
-  {name:"Jesse Droemer",cc:"USA",rank:136,odds:"+99000",pro:true},
-  {name:"Bryce Fisher",cc:"USA",rank:137,odds:"+99000",pro:true},
-  {name:"Chris Gabriele",cc:"USA",rank:138,odds:"+99000",pro:true},
-  {name:"Mark Geddes",cc:"ENG",rank:139,odds:"+99000",pro:true},
-  {name:"Zach Haynes",cc:"USA",rank:140,odds:"+99000",pro:true},
-  {name:"Ian Holt",cc:"USA",rank:141,odds:"+99000",pro:true},
-  {name:"Austin Hurt",cc:"USA",rank:142,odds:"+99000",pro:true},
-  {name:"Jared Jones",cc:"USA",rank:143,odds:"+99000",pro:true},
-  {name:"Michael Katrude",cc:"USA",rank:144,odds:"+99000",pro:true},
-  {name:"Ben Kern",cc:"USA",rank:145,odds:"+99000",pro:true},
-  {name:"Ryan Lenahan",cc:"USA",rank:146,odds:"+99000",pro:true},
-  {name:"Paul McClure",cc:"USA",rank:147,odds:"+99000",pro:true},
-  {name:"Ben Polland",cc:"USA",rank:148,odds:"+99000",pro:true},
-  {name:"Garrett Sapp",cc:"USA",rank:149,odds:"+99000",pro:true},
-  {name:"Braden Shattuck",cc:"USA",rank:150,odds:"+99000",pro:true},
-  {name:"Michael Thorbjornsen",cc:"USA",rank:151,odds:"+99000"},
-  {name:"Ryan Vermeer",cc:"USA",rank:152,odds:"+99000",pro:true},
-  {name:"Timothy Wiseman",cc:"USA",rank:153,odds:"+99000",pro:true},
-  {name:"Angel Ayora",cc:"ESP",rank:154,odds:"+99000",pro:true},
-  // ── Final qualifiers ──
-  {name:"Brandt Snedeker",cc:"USA",rank:155,odds:"+99000"},
-  {name:"Sudarshan Yellamaraju",cc:"CAN",rank:156,odds:"+99000"},
-  {name:"Johnny Keefer",cc:"USA",rank:157,odds:"+99000",pro:true},
-  {name:"Bubba Watson",cc:"USA",rank:158,odds:"+99000"},
-  {name:"Zach Johnson",cc:"USA",rank:159,odds:"+99000"},
+  {name:"Scottie Scheffler",cc:"USA",rank:1,odds:"+590"},
+  {name:"Rory McIlroy",cc:"NIR",rank:2,odds:"+760"},
+  {name:"Jon Rahm",cc:"ESP",rank:3,odds:"+1550"},
+  {name:"Matt Fitzpatrick",cc:"ENG",rank:4,odds:"+2100"},
+  {name:"Tommy Fleetwood",cc:"ENG",rank:5,odds:"+2100"},
+  {name:"Xander Schauffele",cc:"USA",rank:6,odds:"+2200"},
+  {name:"Chris Gotterup",cc:"USA",rank:7,odds:"+2800"},
+  {name:"Cameron Young",cc:"USA",rank:8,odds:"+2800"},
+  {name:"Ludvig Aberg",cc:"SWE",rank:9,odds:"+3100"},
+  {name:"Collin Morikawa",cc:"USA",rank:10,odds:"+3100"},
+  {name:"Tyrrell Hatton",cc:"ENG",rank:11,odds:"+3700"},
+  {name:"Robert MacIntyre",cc:"SCO",rank:12,odds:"+4100"},
+  {name:"Wyndham Clark",cc:"USA",rank:13,odds:"+4200"},
+  {name:"Sam Burns",cc:"USA",rank:14,odds:"+4200"},
+  {name:"Bryson DeChambeau",cc:"USA",rank:15,odds:"+4300"},
+  {name:"Viktor Hovland",cc:"NOR",rank:16,odds:"+4500"},
+  {name:"Justin Rose",cc:"ENG",rank:17,odds:"+4700"},
+  {name:"Joaquin Niemann",cc:"CHI",rank:18,odds:"+5300"},
+  {name:"Brooks Koepka",cc:"USA",rank:19,odds:"+5300"},
+  {name:"Justin Thomas",cc:"USA",rank:20,odds:"+5400"},
+  {name:"Russell Henley",cc:"USA",rank:21,odds:"+5400"},
+  {name:"Patrick Cantlay",cc:"USA",rank:22,odds:"+5600"},
+  {name:"Jordan Spieth",cc:"USA",rank:23,odds:"+6100"},
+  {name:"Patrick Reed",cc:"USA",rank:24,odds:"+6400"},
+  {name:"Tom Kim",cc:"KOR",rank:25,odds:"+6400"},
+  {name:"Si Woo Kim",cc:"KOR",rank:26,odds:"+6600"},
+  {name:"Shane Lowry",cc:"IRL",rank:27,odds:"+7000"},
+  {name:"Min Woo Lee",cc:"AUS",rank:28,odds:"+7000"},
+  {name:"J.J. Spaun",cc:"USA",rank:29,odds:"+8600"},
+  {name:"Hideki Matsuyama",cc:"JPN",rank:30,odds:"+8600"},
+  {name:"Nicolai Hojgaard",cc:"DEN",rank:31,odds:"+8800"},
+  {name:"Kurt Kitayama",cc:"USA",rank:32,odds:"+9200"},
+  {name:"Ben Griffin",cc:"USA",rank:33,odds:"+9400"},
+  {name:"Adam Scott",cc:"AUS",rank:34,odds:"+9800"},
+  {name:"Aaron Rai",cc:"ENG",rank:35,odds:"+10000"},
+  {name:"Alex Fitzpatrick",cc:"ENG",rank:36,odds:"+10500"},
+  {name:"Kristoffer Reitan",cc:"NOR",rank:37,odds:"+10500"},
+  {name:"Harris English",cc:"USA",rank:38,odds:"+10500"},
+  {name:"David Puig",cc:"ESP",rank:39,odds:"+10500"},
+  {name:"Maverick McNealy",cc:"USA",rank:40,odds:"+11000"},
+  {name:"Akshay Bhatia",cc:"USA",rank:41,odds:"+11500"},
+  {name:"Rickie Fowler",cc:"USA",rank:42,odds:"+12000"},
+  {name:"Alex Noren",cc:"SWE",rank:43,odds:"+12500"},
+  {name:"Brian Harman",cc:"USA",rank:44,odds:"+12500"},
+  {name:"Cameron Smith",cc:"AUS",rank:45,odds:"+13000"},
+  {name:"Eugenio Chacarra",cc:"ESP",rank:46,odds:"+14000"},
+  {name:"Corey Conners",cc:"CAN",rank:47,odds:"+14000"},
+  {name:"Gary Woodland",cc:"USA",rank:48,odds:"+14500"},
+  {name:"Jason Day",cc:"AUS",rank:49,odds:"+15000"},
+  {name:"Keith Mitchell",cc:"USA",rank:50,odds:"+15500"},
+  {name:"Max Homa",cc:"USA",rank:51,odds:"+15500"},
+  {name:"Jake Knapp",cc:"USA",rank:52,odds:"+15500"},
+  {name:"Angel Ayora",cc:"ESP",rank:53,odds:"+16000"},
+  {name:"Tom McKibbin",cc:"NIR",rank:54,odds:"+16500"},
+  {name:"Ryan Gerard",cc:"USA",rank:55,odds:"+16500"},
+  {name:"Ryan Fox",cc:"NZL",rank:56,odds:"+17000"},
+  {name:"Sepp Straka",cc:"AUT",rank:57,odds:"+17000"},
+  {name:"J.T. Poston",cc:"USA",rank:58,odds:"+17500"},
+  {name:"Thomas Detry",cc:"BEL",rank:59,odds:"+18000"},
+  {name:"Ryo Hisatsune",cc:"JPN",rank:60,odds:"+18000"},
+  {name:"Eric Cole",cc:"USA",rank:61,odds:"+18000"},
+  {name:"Harry Hall",cc:"ENG",rank:62,odds:"+19000"},
+  {name:"Matt Wallace",cc:"ENG",rank:63,odds:"+19500"},
+  {name:"Marco Penge",cc:"ENG",rank:64,odds:"+19500"},
+  {name:"Keegan Bradley",cc:"USA",rank:65,odds:"+19500"},
+  {name:"Jordan Smith",cc:"ENG",rank:66,odds:"+19500"},
+  {name:"Haotong Li",cc:"CHN",rank:67,odds:"+20000"},
+  {name:"Sungjae Im",cc:"KOR",rank:68,odds:"+20000"},
+  {name:"Sahith Theegala",cc:"USA",rank:69,odds:"+20000"},
+  {name:"Alex Smalley",cc:"USA",rank:70,odds:"+21000"},
+  {name:"Bud Cauley",cc:"USA",rank:71,odds:"+21000"},
+  {name:"Pierceson Coody",cc:"USA",rank:72,odds:"+21000"},
+  {name:"Michael Brennan",cc:"USA",rank:73,odds:"+21000"},
+  {name:"Jacob Bridgeman",cc:"USA",rank:74,odds:"+21000"},
+  {name:"Max Greyserman",cc:"USA",rank:75,odds:"+21000"},
+  {name:"Jackson Suber",cc:"USA",rank:76,odds:"+22000"},
+  {name:"Rasmus Hojgaard",cc:"DEN",rank:77,odds:"+23000"},
+  {name:"Daniel Berger",cc:"USA",rank:78,odds:"+24000"},
+  {name:"Nick Taylor",cc:"CAN",rank:79,odds:"+24000"},
+  {name:"Jayden Schaper",cc:"RSA",rank:80,odds:"+25000"},
+  {name:"Andrew Novak",cc:"USA",rank:81,odds:"+25000"},
+  {name:"Lucas Herbert",cc:"AUS",rank:82,odds:"+27000"},
+  {name:"Rasmus Neergaard-Petersen",cc:"DEN",rank:83,odds:"+31000"},
+  {name:"Sam Stevens",cc:"CAN",rank:84,odds:"+31000"},
+  {name:"Jesper Svensson",cc:"SWE",rank:85,odds:"+32000"},
+  {name:"Sami Valimaki",cc:"FIN",rank:86,odds:"+33000"},
+  {name:"Bernd Wiesberger",cc:"AUT",rank:87,odds:"+33000"},
+  {name:"Matt McCarty",cc:"USA",rank:88,odds:"+34000"},
+  {name:"Michael Kim",cc:"USA",rank:89,odds:"+34000"},
+  {name:"Scott Vincent",cc:"ZIM",rank:90,odds:"+35000"},
+  {name:"Daniel Hillier",cc:"NZL",rank:91,odds:"+37000"},
+  {name:"Matthew Jordan",cc:"ENG",rank:92,odds:"+37000"},
+  {name:"Louis Oosthuizen",cc:"RSA",rank:93,odds:"+38000"},
+  {name:"Hennie du Plessis",cc:"RSA",rank:94,odds:"+39000"},
+  {name:"Casey Jarvis",cc:"RSA",rank:95,odds:"+39000"},
+  {name:"Jose Luis Ballester",cc:"ESP",rank:96,odds:"+40000"},
+  {name:"Keita Nakajima",cc:"JPN",rank:97,odds:"+41000"},
+  {name:"John Parry",cc:"ENG",rank:98,odds:"+44000"},
+  {name:"Laurie Canter",cc:"ENG",rank:99,odds:"+46000"},
+  {name:"Daniel Brown",cc:"ENG",rank:100,odds:"+50000"},
+  {name:"Billy Horschel",cc:"USA",rank:101,odds:"+50000"},
+  {name:"Antoine Rozner",cc:"FRA",rank:102,odds:"+52500"},
+  {name:"Kota Kaneko",cc:"JPN",rank:103,odds:"+57500"},
+  {name:"Adrien Saddier",cc:"FRA",rank:104,odds:"+60000"},
+  {name:"Andy Sullivan",cc:"ENG",rank:105,odds:"+72500"},
+  {name:"Francesco Laporta",cc:"ITA",rank:106,odds:"+75000"},
+  {name:"Padraig Harrington",cc:"IRL",rank:107,odds:"+82500"},
+  {name:"Dan Bradbury",cc:"ENG",rank:108,odds:"+85000"},
+  {name:"Caleb Surratt",cc:"USA",rank:109,odds:"+87500"},
+  {name:"Francesco Molinari",cc:"ITA",rank:110,odds:"+90000"},
+  {name:"Alistair Docherty",cc:"SCO",rank:111,odds:"+97500"},
+  {name:"Peter Uihlein",cc:"USA",rank:112,odds:"+110000"},
+  {name:"Stewart Cink",cc:"USA",rank:113,odds:"+110000"},
+  {name:"M.J. Daffue",cc:"RSA",rank:114,odds:"+115000"},
+  {name:"Joakim Lagergren",cc:"SWE",rank:115,odds:"+125000"},
+  {name:"Shaun Norris",cc:"RSA",rank:116,odds:"+135000"},
+  {name:"Frederic Lacroix",cc:"FRA",rank:117,odds:"+140000"},
+  {name:"Henrik Stenson",cc:"SWE",rank:118,odds:"+150000"},
+  {name:"Michael Hollick",cc:"ENG",rank:119,odds:"+160000"},
+  {name:"Kazuma Kobori",cc:"JPN",rank:120,odds:"+170000"},
+  {name:"Tim Wiedemeyer",cc:"GER",rank:121,odds:"+180000"},
+  {name:"Jiho Yang",cc:"KOR",rank:122,odds:"+180000"},
+  {name:"Jeongwoo Ham",cc:"KOR",rank:123,odds:"+190000"},
+  {name:"Ren Yonezawa",cc:"JPN",rank:124,odds:"+190000"},
+  {name:"Naoyuki Kataoka",cc:"JPN",rank:125,odds:"+190000"},
+  {name:"James Nicholas",cc:"USA",rank:126,odds:"+200000"},
+  {name:"Sam Bairstow",cc:"ENG",rank:127,odds:"+200000"},
+  {name:"Travis Smyth",cc:"AUS",rank:128,odds:"+225000"},
+  {name:"Kazuki Higa",cc:"JPN",rank:129,odds:"+225000"},
+  {name:"Alejandro De Castro Piera",cc:"ESP",rank:130,odds:"+250000"},
+  {name:"Ryutaro Nagano",cc:"JPN",rank:131,odds:"+250000"},
+  {name:"Matthew Southgate",cc:"ENG",rank:132,odds:"+250000"},
+  {name:"Jack Buchanan",cc:"SCO",rank:133,odds:"+325000"},
+  {name:"Austen Truslow",cc:"USA",rank:134,odds:"+350000"},
+  {name:"Lev Grinberg",cc:"ISR",rank:135,odds:"+350000"},
+  {name:"Tiger Christensen",cc:"DEN",rank:136,odds:"+400000"},
+  {name:"Baard Skogen",cc:"NOR",rank:137,odds:"+450000"},
+  {name:"Tom Sloman",cc:"ENG",rank:138,odds:"+450000"},
+  {name:"Nevill Ruiter",cc:"RSA",rank:139,odds:"+450000"},
+  {name:"Marcus Plunkett",cc:"IRL",rank:140,odds:"+450000"},
+  {name:"Matthew Baldwin",cc:"ENG",rank:141,odds:"+450000"},
+  {name:"Cameron John",cc:"AUS",rank:142,odds:"+450000"},
+  {name:"David Howard",cc:"SCO",rank:143,odds:"+500000"},
+  {name:"Darren Clarke",cc:"NIR",rank:144,odds:"+500000"},
+  {name:"Jack McDonald",cc:"SCO",rank:145,odds:"+500000"},
+  {name:"Nico Echavarria",cc:"COL",rank:146,odds:"N/A"},
+  // Amateurs
+  {name:"Stuart Grehan",cc:"IRL",rank:147,odds:"Am",am:true},
+  {name:"Fifa Laopakdee",cc:"THA",rank:148,odds:"Am",am:true},
+  {name:"Mason Howell",cc:"USA",rank:149,odds:"Am",am:true},
+  {name:"Mateo Pulcini",cc:"ARG",rank:150,odds:"Am",am:true},
+  // Last qualifier placeholder
+  {name:"Last Qualifier (TBD)",cc:"—",rank:156,odds:"N/A"},
 ];
 
-// ═══════════════════════════════════════
-// SESSION
-// ═══════════════════════════════════════
+// Session key unique to Open pool
+const SESSION_KEY = 'open_s1';
+
 let S = { email:'', name:'', sessionToken:'', isCommish:false, commishPassword:'' };
 let pool = {}, timerInt=null, timerVal=90, pendingGolfer=null;
 let liveScores={}, pollInt=null, lastScoreFetch=0, editMgrs=null;
 
-function saveS(){ localStorage.setItem('gp_s6', JSON.stringify(S)); }
-function loadS(){ try{ const s=localStorage.getItem('gp_s6'); if(s) S=JSON.parse(s); }catch{} }
-function logout(){ clearInterval(pollInt); clearInterval(timerInt); localStorage.removeItem('gp_s6'); S={email:'',name:'',sessionToken:'',isCommish:false,commishPassword:''}; goScreen('s-login'); showLogin(); }
+function saveS(){ localStorage.setItem(SESSION_KEY, JSON.stringify(S)); }
+function loadS(){ try{ const s=localStorage.getItem(SESSION_KEY); if(s) S=JSON.parse(s); }catch{} }
+function logout(){ clearInterval(pollInt); clearInterval(timerInt); localStorage.removeItem(SESSION_KEY); S={email:'',name:'',sessionToken:'',isCommish:false,commishPassword:''}; goScreen('s-login'); showLogin(); }
 
 window.addEventListener('load', async ()=>{
   loadS();
@@ -537,7 +502,6 @@ window.addEventListener('load', async ()=>{
   }
 });
 
-// LOGIN
 function showLogin(){ document.getElementById('toggle-login').classList.add('on'); document.getElementById('toggle-register').classList.remove('on'); document.getElementById('form-login').style.display='block'; document.getElementById('form-register').style.display='none'; }
 function showRegister(){ document.getElementById('toggle-register').classList.add('on'); document.getElementById('toggle-login').classList.remove('on'); document.getElementById('form-register').style.display='block'; document.getElementById('form-login').style.display='none'; }
 function showCommishLogin(){ document.getElementById('player-card').style.display='none'; document.getElementById('commish-card').style.display='block'; }
@@ -551,8 +515,7 @@ async function doLogin(){
     const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
     const d=await r.json();
     if(!r.ok){ err.textContent=d.error||'Sign in failed.'; err.classList.add('show'); return; }
-    S={email:d.email,name:d.name,sessionToken:d.sessionToken,isCommish:false,commishPassword:''};
-    pool=d.pool; saveS(); enterApp();
+    S={email:d.email,name:d.name,sessionToken:d.sessionToken,isCommish:false,commishPassword:''}; pool=d.pool; saveS(); enterApp();
   }catch{ err.textContent='Connection error.'; err.classList.add('show'); }
 }
 async function doRegister(){
@@ -566,8 +529,7 @@ async function doRegister(){
     const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,poolPassword:poolPass,password:pass})});
     const d=await r.json();
     if(!r.ok){ err.textContent=d.error||'Registration failed.'; err.classList.add('show'); return; }
-    S={email:d.email,name:d.name,sessionToken:d.sessionToken,isCommish:false,commishPassword:''};
-    pool=d.pool; saveS(); enterApp();
+    S={email:d.email,name:d.name,sessionToken:d.sessionToken,isCommish:false,commishPassword:''}; pool=d.pool; saveS(); enterApp();
   }catch{ err.textContent='Connection error.'; err.classList.add('show'); }
 }
 async function doCommishLogin(){
@@ -582,7 +544,7 @@ async function doCommishLogin(){
 }
 
 function enterApp(){
-  document.getElementById('main-pool-name').textContent=pool.poolName||'Golf Pool 2026';
+  document.getElementById('main-pool-name').textContent=pool.poolName||'The Open Pool 2026';
   document.getElementById('rules-picks').textContent=pool.picksPerPerson||5;
   document.getElementById('rules-secs').textContent=pool.pickSeconds||90;
   document.getElementById('tb-admin').style.display=S.isCommish?'flex':'none';
@@ -607,8 +569,7 @@ function startPolling(){
   pollInt=setInterval(async()=>{
     try{
       const r=await fetch('/api/pool'); if(!r.ok) return;
-      const newPool=await r.json();
-      const pickChanged=newPool.currentPick!==pool.currentPick;
+      const newPool=await r.json(); const pickChanged=newPool.currentPick!==pool.currentPick;
       pool=newPool;
       const active=['lobby','draft'].find(t=>{ const el=document.getElementById('tc-'+t); return el&&el.style.display!=='none'; });
       if(active==='lobby') renderLobby();
@@ -620,8 +581,7 @@ function startPolling(){
 function syncTimerFromServer(){
   if(!pool.pickDeadline||pool.draftComplete||!pool.draftStarted) return;
   const secsLeft=Math.max(0,Math.round((pool.pickDeadline-Date.now())/1000));
-  timerVal=secsLeft;
-  updateTimerUI();
+  timerVal=secsLeft; updateTimerUI();
   if(secsLeft===0&&isMyTurn()) autoPickGolfer();
 }
 
@@ -629,15 +589,14 @@ function renderLobby(){
   const grid=document.getElementById('lobby-grid'); if(!grid) return;
   const mgrs=pool.managers||[];
   document.getElementById('mgr-count').textContent=mgrs.length+' manager'+(mgrs.length!==1?'s':'');
-  grid.innerHTML=mgrs.map((m,i)=>{
-    const name=m.name||m, email=m.email||m, isMe=email===S.email||name===S.name;
+  grid.innerHTML=mgrs.map((m,i)=>{ const name=m.name||m, email=m.email||m, isMe=email===S.email||name===S.name;
     return `<div class="mgr-slot on"><div><div class="slot-name">${name}${isMe?'<span class="badge b-green">You</span>':''}</div><div class="slot-order">#${i+1} pick order</div></div></div>`;
   }).join('')||'<div class="muted" style="padding:8px;font-size:12px;">No managers yet.</div>';
 }
 
 function startCountdown(){
   setInterval(()=>{
-    const dt=new Date(pool.draftTime||'2026-05-13T20:00:00'), diff=dt-new Date();
+    const dt=new Date(pool.draftTime||'2026-07-15T20:00:00'), diff=dt-new Date();
     const ls=document.getElementById('draft-time-str'); if(ls) ls.textContent='Draft: '+dt.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
     const el=document.getElementById('cdown'),lb=document.getElementById('cdown-lbl'); if(!el) return;
     if(diff<=0){el.textContent='LIVE';if(lb)lb.textContent='Draft is Live!';return;}
@@ -669,16 +628,9 @@ function renderDraftUI(){
   document.getElementById('pick-line').textContent=`Round ${info.round} · Pick ${pool.currentPick+1} of ${order.length}`;
   renderGolferList();
 }
-function startPickTimer(){
-  // Timer is now driven by server deadline (pool.pickDeadline).
-  // We just tick every second to update the display from the server timestamp.
-  // This means all browsers stay perfectly in sync automatically.
-  clearInterval(timerInt);
-  syncTimerFromServer(); // immediate sync
-  timerInt=setInterval(()=>{ syncTimerFromServer(); },1000);
-}
+function startPickTimer(){ clearInterval(timerInt); syncTimerFromServer(); timerInt=setInterval(()=>{ syncTimerFromServer(); },1000); }
 function updateTimerUI(){ const v=document.getElementById('t-val'),c=document.getElementById('timer-ring'); if(v) v.textContent=timerVal; if(c) c.classList.toggle('hot',timerVal<=15); }
-async function autoPickGolfer(){ const taken=new Set((pool.picks||[]).map(p=>p.golfer)); const avail=FIELD.find(g=>!taken.has(g.name)); if(avail) await submitPick(avail.name); }
+async function autoPickGolfer(){ const taken=new Set((pool.picks||[]).map(p=>p.golfer)); const avail=FIELD.find(g=>!taken.has(g.name)&&g.name!=='Last Qualifier (TBD)'); if(avail) await submitPick(avail.name); }
 
 function renderGolferList(){
   const taken=new Set((pool.picks||[]).map(p=>p.golfer));
@@ -692,9 +644,8 @@ function renderGolferList(){
     const click=isTaken?'':` onclick="selGolfer('${g.name.replace(/'/g,"\\'")}','${g.cc}','${g.odds}')"`;
     const pickObj=isTaken&&!isMine?(pool.picks||[]).find(p=>p.golfer===g.name):null;
     const drafter=pickObj?`<span class="g-drafter">${gName(pool.managers[pickObj.managerIdx])||''}</span>`:'';
-    const autoTag=pickObj?.autoPick?'<span class="b-auto">auto</span>':'';
-    const proTag=g.pro?'<span style="font-size:9px;color:#90b0ff;background:rgba(80,120,220,.15);padding:1px 5px;border-radius:3px;margin-left:4px;">PGA Pro</span>':'';
-    return `<div class="${cls}"${click}><span class="g-rank">${g.rank}</span><span class="g-name">${g.name}${autoTag}${proTag}</span><span class="g-cc">${g.cc}</span><span class="g-odds">${g.odds}</span>${isMine?'<span class="pick-tag">Yours</span>':''}${drafter}</div>`;
+    const amTag=g.am?'<span class="am-tag">Am</span>':'';
+    return `<div class="${cls}"${click}><span class="g-rank">${g.rank}</span><span class="g-name">${g.name}${amTag}</span><span class="g-cc">${g.cc}</span><span class="g-odds">${g.odds}</span>${isMine?'<span class="pick-tag">Yours</span>':''}${drafter}</div>`;
   }).join('');
 }
 function filterG(){renderGolferList();}
@@ -706,66 +657,58 @@ async function submitPick(golfer){
     const r=await fetch('/api/pool/pick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:S.sessionToken,email:S.email,golfer})});
     const d=await r.json();
     if(!r.ok){alert(d.error||'Pick failed');return;}
-    pool=d.pool; renderDraftUI(); if(!pool.draftComplete){ syncTimerFromServer(); } // server sets new deadline, we just sync
+    pool=d.pool; renderDraftUI(); syncTimerFromServer(); if(!pool.draftComplete) startPickTimer();
   }catch{alert('Connection error.');}
 }
 
-// SCORES
-async function fetchScores(force){
-  if(!force&&Date.now()-lastScoreFetch<60000&&Object.keys(liveScores).length>0){renderPoolScoreboard();return;}
-  try{ const r=await fetch('/api/scores'); if(!r.ok) throw new Error(); const d=await r.json();
-    liveScores={}; (d.leaderboard||[]).forEach(p=>{ const isCut=p.status&&(p.status.toLowerCase().includes('cut')||p.status.toLowerCase().includes('wd')||p.status.toLowerCase().includes('withdraw')); liveScores[norm(p.name)]={toPar:p.toPar,thru:p.thru,status:p.status,state:p.state,cut:isCut}; }); lastScoreFetch=Date.now(); renderPoolScoreboard();
-  }catch{renderPoolScoreboard();}
-}
+// Scores
 function norm(n){
-  // Normalize name for matching — handles accents, special chars, ESPN variations
   let s=n.toLowerCase()
-    // Explicit replacements for chars NFD won't catch
-    .replace(/ø/g,'o').replace(/ö/g,'o').replace(/ó/g,'o').replace(/ò/g,'o')
-    .replace(/å/g,'a').replace(/ä/g,'a').replace(/á/g,'a').replace(/à/g,'a')
-    .replace(/ü/g,'u').replace(/ú/g,'u').replace(/ñ/g,'n')
-    .replace(/æ/g,'ae').replace(/ß/g,'ss')
-    // Standard NFD normalization for remaining accents
+    .replace(/ø/g,'o').replace(/ö/g,'o').replace(/å/g,'a').replace(/ä/g,'a').replace(/æ/g,'ae')
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z ]/g,'')
-    .replace(/\s+/g,' ').trim();
-  // ESPN name abbreviations
-  s=s.replace(/^matthew /,'matt ')
-     .replace(/^christopher /,'chris ')
-     .replace(/^robert /,'rob ')
-     .replace(/^thomas /,'tom ');
+    .replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim();
+  s=s.replace(/^matthew /,'matt ').replace(/^christopher /,'chris ');
   return s;
 }
 function getPS(name){
   const k=norm(name);
-  // 1. Try exact full name match first
   if(liveScores[k]) return liveScores[k];
-  // 2. Try first + last name match (handles accents/abbreviations)
-  const parts=k.split(' ');
-  const first=parts[0], last=parts[parts.length-1];
+  const parts=k.split(' '), first=parts[0], last=parts[parts.length-1];
   for(const[kk,v] of Object.entries(liveScores)){
-    const kkparts=kk.split(' ');
-    const kkfirst=kkparts[0], kklast=kkparts[kkparts.length-1];
-    // Must match BOTH first and last name to avoid Fitzpatrick confusion
-    if(kklast===last && kkfirst===first) return v;
+    const kkparts=kk.split(' '),kkfirst=kkparts[0],kklast=kkparts[kkparts.length-1];
+    if(kklast===last&&kkfirst===first) return v;
   }
-  // 3. Last resort: last name only if it's unique (not shared)
   const lastMatches=Object.keys(liveScores).filter(kk=>kk.split(' ').pop()===last);
   if(lastMatches.length===1) return liveScores[lastMatches[0]];
   return null;
 }
+
+async function fetchScores(force){
+  if(!force&&Date.now()-lastScoreFetch<600000&&Object.keys(liveScores).length>0){renderPoolScoreboard();return;}
+  const el=document.getElementById('score-list');
+  if(!Object.keys(liveScores).length) el.innerHTML='<div style="padding:20px;text-align:center;color:var(--dim);font-size:13px;"><span class="spinner"></span>Loading scores…</div>';
+  try{
+    const r=await fetch('/api/scores'); if(!r.ok) throw new Error();
+    const d=await r.json();
+    liveScores={};
+    (d.leaderboard||[]).forEach(p=>{
+      const isCut=p.status&&['cut','wd','dq','withdrawn'].includes(p.status.toLowerCase());
+      liveScores[norm(p.name)]={toPar:p.toPar,thru:p.thru,status:p.status,cut:isCut};
+    });
+    lastScoreFetch=Date.now(); renderPoolScoreboard();
+  }catch{ renderPoolScoreboard(); }
+}
+
 function renderPoolScoreboard(){
   const el=document.getElementById('score-list');if(!el)return;
-  if(!(pool.picks&&pool.picks.length)){el.innerHTML='<div style="padding:24px;text-align:center;color:var(--dim);">Scores appear after the draft and once the PGA Championship begins May 15.</div>';return;}
+  if(!(pool.picks&&pool.picks.length)){el.innerHTML='<div style="padding:24px;text-align:center;color:var(--dim);">Scores appear after the draft and once The Open begins July 16.</div>';return;}
   const teams=buildTeams().sort((a,b)=>a.total-b.total);
   el.innerHTML=teams.map((t,i)=>{
     const pos=i===0?'🥇 1st':i===1?'🥈 2nd':i===2?'🥉 3rd':`${i+1}th`;
     const rows=t.golfers.map((g,gi)=>{
-      const dropped=gi>=4;
-      const isCut=g.isCut||false;
-      const par=g.toPar??0;
+      const dropped=gi>=4, isCut=g.isCut||false, par=g.toPar??0;
       const cls='gr-sc '+(dropped?'even':isCut?'over':par<0?'under':par>0?'over':'even');
-      const cutBadge=isCut?'<span style="font-size:9px;background:rgba(180,60,60,.25);color:#f08080;padding:1px 6px;border-radius:3px;margin-left:5px;letter-spacing:1px;">CUT +20</span>':'';
+      const cutBadge=isCut?'<span style="font-size:9px;background:rgba(180,60,60,.25);color:#f08080;padding:1px 6px;border-radius:3px;margin-left:5px;">CUT +20</span>':'';
       return `<div class="g-row${dropped?' gr-dropped':''}"><span class="gr-name">${g.name}${cutBadge}</span><span class="${cls}">${fmtScore(par)}</span><span class="gr-note">${dropped?'dropped':''}</span></div>`;
     }).join('');
     const isMe=t.email===S.email||t.mgrName===S.name;
@@ -776,10 +719,7 @@ function buildTeams(){
   return(pool.managers||[]).map((mgr,idx)=>{
     const picks=(pool.picks||[]).filter(p=>p.managerIdx===idx);
     const golfers=picks.map(p=>{
-      const sc=getPS(p.golfer);
-      // Apply +20 penalty for cut/WD players (+10 per each remaining round)
-      const isCut=sc?.cut||false;
-      const basePar=sc?.toPar??0;
+      const sc=getPS(p.golfer), isCut=sc?.cut||false, basePar=sc?.toPar??0;
       const toPar=isCut?basePar+20:basePar;
       return{name:p.golfer,sc,toPar,isCut};
     }).sort((a,b)=>a.toPar-b.toPar);
@@ -789,91 +729,30 @@ function buildTeams(){
   });
 }
 function fmtScore(s){return s===0?'E':s>0?'+'+s:''+s;}
-setInterval(()=>{const el=document.getElementById('tc-scores');if(el&&el.style.display!=='none')fetchScores();},600000); // 10 min
+setInterval(()=>{const el=document.getElementById('tc-scores');if(el&&el.style.display!=='none')fetchScores();},600000);
 
-// TEAMS
 function renderTeams(){ const el=document.getElementById('teams-content');if(!el)return; const picks=pool.picks||[]; if(!picks.length){el.innerHTML='<div style="padding:24px 16px;text-align:center;color:var(--dim);">Teams appear after the draft.</div>';return;} const rounds={}; picks.forEach(p=>{(rounds[p.round]=rounds[p.round]||[]).push(p);}); let html='<div style="padding:10px 11px 4px;font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;">Pick History</div>'; Object.keys(rounds).sort((a,b)=>a-b).forEach(r=>{ html+=`<div class="r-lbl">Round ${r}</div>`; rounds[r].forEach(p=>{html+=`<div class="p-row"><span class="pr-n">#${p.pick}</span><span class="pr-m">${gName(pool.managers[p.managerIdx])||'?'}${p.autoPick?'<span class="b-auto">auto</span>':''}</span><span class="pr-g">${p.golfer}</span></div>`;}); }); el.innerHTML=html; }
 
-// ADMIN
 function renderAdmin(){
-  document.getElementById('a-pool-name').value =pool.poolName||'';
+  document.getElementById('a-pool-name').value=pool.poolName||'';
   document.getElementById('a-draft-time').value=pool.draftTime?pool.draftTime.slice(0,16):'';
-  document.getElementById('a-picks').value      =pool.picksPerPerson||5;
-  document.getElementById('a-pick-secs').value  =pool.pickSeconds||90;
+  document.getElementById('a-picks').value=pool.picksPerPerson||5;
+  document.getElementById('a-pick-secs').value=pool.pickSeconds||90;
   const ds=document.getElementById('a-draft-status'),sb=document.getElementById('a-start-btn');
   if(pool.draftComplete){ds.textContent='✅ Draft complete.';sb.disabled=true;sb.style.opacity='.4';}
   else if(pool.draftStarted){ds.textContent='🟢 Draft is live!';sb.disabled=true;sb.style.opacity='.4';}
   else{ds.textContent='Draft not started yet.';sb.disabled=false;sb.style.opacity='1';}
   if(!editMgrs) editMgrs=[...(pool.managers||[])];
-  renderAdminMgrs();
-  populateManualPickForm();
-  // Check DB status
-  const dbEl=document.getElementById('db-status');
-  if(dbEl) dbEl.innerHTML='<span class="db-ok">✅ Data stored in Turso cloud database — survives all restarts</span>';
+  renderAdminMgrs(); populateManualPickForm();
 }
-function renderAdminMgrs(){
-  const el=document.getElementById('a-mgr-list');if(!el)return;
-  if(!editMgrs) editMgrs=[...(pool.managers||[])];
-  el.innerHTML=editMgrs.map((m,i)=>`<div class="c-row"><div class="c-av">${(gName(m)||'?')[0].toUpperCase()}</div><div class="c-info f1"><div class="c-nm">${gName(m)}${i===0?'<span class="badge b-gold">1st pick</span>':''}</div><div class="c-em">${gEmail(m)||''}</div></div><button class="c-up" onclick="moveMgr(${i},-1)">▲</button><button class="c-up" onclick="moveMgr(${i},1)">▼</button><button class="c-rm" onclick="removeMgr(${i})">×</button></div>`).join('')||'<div class="muted" style="padding:8px;font-size:12px;">No managers yet.</div>';
-}
+function renderAdminMgrs(){ const el=document.getElementById('a-mgr-list');if(!el)return; if(!editMgrs) editMgrs=[...(pool.managers||[])]; el.innerHTML=editMgrs.map((m,i)=>`<div class="c-row"><div class="c-av">${(gName(m)||'?')[0].toUpperCase()}</div><div class="c-info f1"><div class="c-nm">${gName(m)}${i===0?'<span class="badge b-gold">1st pick</span>':''}</div><div class="c-em">${gEmail(m)||''}</div></div><button class="c-up" onclick="moveMgr(${i},-1)">▲</button><button class="c-up" onclick="moveMgr(${i},1)">▼</button><button class="c-rm" onclick="removeMgr(${i})">×</button></div>`).join('')||'<div class="muted" style="padding:8px;font-size:12px;">No managers yet.</div>'; }
 function moveMgr(i,dir){const j=i+dir;if(j<0||j>=editMgrs.length)return;[editMgrs[i],editMgrs[j]]=[editMgrs[j],editMgrs[i]];renderAdminMgrs();}
 function removeMgr(i){editMgrs.splice(i,1);renderAdminMgrs();}
 function randomizeMgrs(){if(!editMgrs)editMgrs=[...(pool.managers||[])];const f=editMgrs[0],r=editMgrs.slice(1);for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}editMgrs=[f,...r];renderAdminMgrs();}
-
-// MANUAL PICK ENTRY
-function populateManualPickForm(){
-  const totalPicks=(pool.managers?.length||0)*(pool.picksPerPerson||5);
-  const pickSel=document.getElementById('mp-pick-num');
-  const mgrSel=document.getElementById('mp-manager');
-  const golferSel=document.getElementById('mp-golfer');
-  if(!pickSel||!mgrSel||!golferSel) return;
-  pickSel.innerHTML=Array.from({length:totalPicks},(_,i)=>`<option value="${i+1}">#${i+1}</option>`).join('');
-  mgrSel.innerHTML=(pool.managers||[]).map((m,i)=>`<option value="${i}">${gName(m)}</option>`).join('');
-  const taken=new Set((pool.picks||[]).map(p=>p.golfer));
-  golferSel.innerHTML=FIELD.map(g=>`<option value="${g.name}"${taken.has(g.name)?' (taken)':''} >${g.name}${taken.has(g.name)?' ✓':''}</option>`).join('');
-  updateManualPick();
-}
-function updateManualPick(){
-  const pickNum=parseInt(document.getElementById('mp-pick-num')?.value)||1;
-  const order=getDraftOrder();
-  const info=order[pickNum-1];
-  if(info && document.getElementById('mp-manager')){
-    document.getElementById('mp-manager').value=info.managerIdx;
-  }
-  // Pre-select existing pick if there is one
-  const existing=(pool.picks||[]).find(p=>p.pick===pickNum);
-  if(existing && document.getElementById('mp-golfer')){
-    document.getElementById('mp-golfer').value=existing.golfer;
-  }
-}
-async function submitManualPick(){
-  const pickIndex=parseInt(document.getElementById('mp-pick-num').value);
-  const managerIdx=parseInt(document.getElementById('mp-manager').value);
-  const golfer=document.getElementById('mp-golfer').value;
-  const order=getDraftOrder();
-  const info=order[pickIndex-1];
-  const round=info?.round||1;
-  const err=document.getElementById('mp-err'),ok=document.getElementById('mp-ok');
-  err.classList.remove('show');ok.classList.remove('show');
-  try{
-    const r=await fetch('/api/pool/manual-pick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword,pickIndex,managerIdx,golfer,round})});
-    const d=await r.json();
-    if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}
-    pool=d.pool; ok.textContent=`Pick #${pickIndex} saved: ${gName(pool.managers[managerIdx])} → ${golfer}`; ok.classList.add('show');
-    populateManualPickForm(); renderTeams(); renderLobby();
-  }catch{err.textContent='Connection error.';err.classList.add('show');}
-}
-async function markDraftComplete(){
-  if(!confirm('Mark the draft as complete?'))return;
-  const err=document.getElementById('mp-err'),ok=document.getElementById('mp-ok');
-  try{
-    const r=await fetch('/api/pool/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword})});
-    const d=await r.json();
-    if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}
-    pool=d.pool; ok.textContent='Draft marked complete!';ok.classList.add('show'); renderAdmin(); renderDraftUI();
-  }catch{err.textContent='Connection error.';err.classList.add('show');}
-}
-
+function populateManualPickForm(){ const totalPicks=(pool.managers?.length||0)*(pool.picksPerPerson||5); const pickSel=document.getElementById('mp-pick-num'),mgrSel=document.getElementById('mp-manager'),golferSel=document.getElementById('mp-golfer'); if(!pickSel||!mgrSel||!golferSel) return; pickSel.innerHTML=Array.from({length:totalPicks},(_,i)=>`<option value="${i+1}">#${i+1}</option>`).join(''); mgrSel.innerHTML=(pool.managers||[]).map((m,i)=>`<option value="${i}">${gName(m)}</option>`).join(''); const taken=new Set((pool.picks||[]).map(p=>p.golfer)); golferSel.innerHTML=FIELD.map(g=>`<option value="${g.name}">${g.name}${taken.has(g.name)?' ✓':''}</option>`).join(''); updateManualPick(); }
+function updateManualPick(){ const pickNum=parseInt(document.getElementById('mp-pick-num')?.value)||1; const order=getDraftOrder(); const info=order[pickNum-1]; if(info&&document.getElementById('mp-manager')) document.getElementById('mp-manager').value=info.managerIdx; const existing=(pool.picks||[]).find(p=>p.pick===pickNum); if(existing&&document.getElementById('mp-golfer')) document.getElementById('mp-golfer').value=existing.golfer; }
+async function submitManualPick(){ const pickIndex=parseInt(document.getElementById('mp-pick-num').value),managerIdx=parseInt(document.getElementById('mp-manager').value),golfer=document.getElementById('mp-golfer').value; const order=getDraftOrder(),info=order[pickIndex-1],round=info?.round||1; const err=document.getElementById('mp-err'),ok=document.getElementById('mp-ok'); err.classList.remove('show');ok.classList.remove('show'); try{ const r=await fetch('/api/pool/manual-pick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword,pickIndex,managerIdx,golfer,round})}); const d=await r.json(); if(!r.ok){err.textContent=d.error;err.classList.add('show');return;} pool=d.pool;ok.textContent=`Pick #${pickIndex} saved: ${gName(pool.managers[managerIdx])} → ${golfer}`;ok.classList.add('show'); populateManualPickForm();renderTeams();renderLobby(); }catch{err.textContent='Connection error.';err.classList.add('show');} }
+async function markDraftComplete(){ if(!confirm('Mark the draft as complete?'))return; const err=document.getElementById('mp-err'),ok=document.getElementById('mp-ok'); try{ const r=await fetch('/api/pool/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword})}); const d=await r.json(); if(!r.ok){err.textContent=d.error;err.classList.add('show');return;} pool=d.pool;ok.textContent='Draft marked complete!';ok.classList.add('show');renderAdmin();renderDraftUI(); }catch{err.textContent='Connection error.';err.classList.add('show');} }
 async function saveMgrs(){const err=document.getElementById('a-mgr-err'),ok=document.getElementById('a-mgr-ok');err.classList.remove('show');ok.classList.remove('show');try{const r=await fetch('/api/pool/managers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword,managers:editMgrs})});const d=await r.json();if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}pool=d.pool;ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),3000);renderLobby();}catch{err.textContent='Connection error.';err.classList.add('show');}}
 async function saveSettings(){const err=document.getElementById('a-settings-err'),ok=document.getElementById('a-settings-ok');err.classList.remove('show');ok.classList.remove('show');try{const r=await fetch('/api/pool/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword,poolName:document.getElementById('a-pool-name').value,draftTime:document.getElementById('a-draft-time').value,picksPerPerson:document.getElementById('a-picks').value,pickSeconds:document.getElementById('a-pick-secs').value})});const d=await r.json();if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}const pr=await fetch('/api/pool');pool=await pr.json();document.getElementById('main-pool-name').textContent=pool.poolName;document.getElementById('rules-picks').textContent=pool.picksPerPerson||5;document.getElementById('rules-secs').textContent=pool.pickSeconds||90;ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),3000);}catch{err.textContent='Connection error.';err.classList.add('show');}}
 async function startDraftNow(){const err=document.getElementById('a-draft-err'),ok=document.getElementById('a-draft-ok');err.classList.remove('show');ok.classList.remove('show');try{const r=await fetch('/api/pool/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commishPassword:S.commishPassword})});const d=await r.json();if(!r.ok){err.textContent=d.error;err.classList.add('show');return;}pool=d.pool;ok.textContent='Draft started! 🏌️';ok.classList.add('show');renderAdmin();renderDraftUI();startPickTimer();}catch{err.textContent='Connection error.';err.classList.add('show');}}
